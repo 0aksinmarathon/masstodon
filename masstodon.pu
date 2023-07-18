@@ -1,0 +1,56 @@
+ @startuml test
+ hide circle
+ skinparam linetype ortho
+
+ entity "users" as users {
+     * <<PK>> id : Guid : id
+     --
+     * name: string
+     * picture: string
+     * created_at: date
+     * updated_at: date
+ }
+
+ entity "todos" as todos {
+     * <<PK>> id : Guid
+     --
+     * <<FK>> user_id: foreignId
+     * title: string
+     * description : string
+     * progress: integer
+     * status: string
+     end_at: date
+     start_at: date
+     due_date: date
+     * created_at:date
+     * updated_at:date
+     unique : [user_id, title] 
+ }
+
+entity "comments" as comments {
+     * <<PK>> id : Guid
+     --
+     * <<FK>> user_id: foreignId
+     * <<FK>> todo_id: foreignId
+     * text: string
+     * created_at: date
+     * updated_at: date
+ }
+
+ entity "likes" as likes {
+     * <<PK>> id : Guid
+     --
+     * <<FK>> user_id: foreignId
+     * <<FK>> todo_id: foreignId
+     * text: string
+     * created_at: date
+     unique: [user_id, todo_id] 
+ }
+
+ users ||..o{ todos
+ users ||..o{ comments
+ todos ||..o{ comments
+ users ||..o{ likes
+ todos ||..o{ likes
+
+ @enduml

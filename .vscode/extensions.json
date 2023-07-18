@@ -1,0 +1,27 @@
+{
+	"recommendations": [
+		"saikou9901.evilinspector",
+		"streetsidesoftware.code-spell-checker",
+		"editorconfig.editorconfig",
+		"kavod-io.vscode-jest-test-adapter",
+		"bierner.markdown-mermaid",
+		"irongeek.vscode-env",
+		"oderwat.indent-rainbow",
+		"usernamehw.errorlens",
+		"wayou.vscode-todo-highlight",
+		"rvest.vs-code-prettier-eslint",
+		"gruntfuggly.todo-tree",
+		"ionutvmi.path-autocomplete",
+		"formulahendry.auto-complete-tag",
+		"formulahendry.auto-close-tag",
+		"formulahendry.auto-rename-tag",
+		"donjayamanne.githistory",
+		"eamodio.gitlens",
+		"vscode-icons-team.vscode-icons",
+		"dzhavat.bracket-pair-toggler",
+		"bradlc.vscode-tailwindcss",
+		"qhoekman.language-plantuml",
+		"esbenp.prettier-vscode",
+		"dsznajder.es7-react-js-snippets"
+	]
+}
