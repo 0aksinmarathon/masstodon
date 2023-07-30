@@ -81,12 +81,22 @@ export class TodoRepository implements ITodoRepository {
 		const {} = await fetch(``);
 	}
 
-	async updateTitle() {
-		const {} = await fetch(``);
+	async updateTitle(todoId: number, title: string) {
+		console.log('updateTitle');
+		const { error } = await supabase
+			.from('todos')
+			.update({ title })
+			.eq('id', todoId);
+		if (error) throw new Error('failed to update title');
 	}
 
-	async updateDescription() {
-		const {} = await fetch(``);
+	async updateDescription(todoId: number, description: string) {
+		console.log('updateTitle');
+		const { error } = await supabase
+			.from('todos')
+			.update({ description })
+			.eq('id', todoId);
+		if (error) throw new Error('failed to update desc');
 	}
 	async updateSorKey() {
 		const {} = await fetch(``);
