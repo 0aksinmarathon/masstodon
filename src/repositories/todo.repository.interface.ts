@@ -8,4 +8,5 @@ export interface ITodoRepository {
 	addComment;
 	updateComment;
 	deleteComment;
+	deleteTag;
 }

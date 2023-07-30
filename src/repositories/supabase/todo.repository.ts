@@ -1,8 +1,10 @@
-import { container } from 'tsyringe';
+import { container, injectable, singleton } from 'tsyringe';
 import { ITodoRepository } from '../todo.repository.interface';
 import { supabase } from './supabase';
 import { SupabaseClient } from '@supabase/supabase-js';
+import ContinuousSlider from '../../components/Slider';
 
+// @injectable()
 export class TodoRepository implements ITodoRepository {
 	private supabase: SupabaseClient = supabase;
 	constructor() {
@@ -13,16 +15,42 @@ export class TodoRepository implements ITodoRepository {
 		console.log('getTodoDetail');
 		const { data, error } = await this.supabase
 			.from('todos')
-			.select('*')
+			.select(
+				`
+			*,
+			tags ( id, name ),
+			comments ( id, content, user: user_id (name, picture) ),
+			likes ( user_id ),
+			user: user_id ( name, picture )
+			`
+			)
 			.eq('id', id)
 			.is('deleted_at', null);
-
 		if (error) throw new Error('failed to get todo detail');
 		return data;
 	}
 
 	async getMyTodoList() {
-		const {} = await fetch(``);
+		console.log('getMyTodoList');
+		const { data, error } = await this.supabase
+			.from('todos')
+			.select(
+				`
+			*,
+			tags ( id, name ),
+			comments ( id ),
+			likes ( user_id ),
+			user: user_id ( name, picture )
+			`
+			)
+			.is('deleted_at', null);
+		console.log(data);
+		if (error) throw new Error('failed to get my todo list');
+		return {
+			planning: data?.filter(({ status }) => status === 'planning'),
+			workInProgress: data?.filter(({ status }) => status === 'workInProgress'),
+			finished: data?.filter(({ status }) => status === 'finished'),
+		};
 	}
 
 	async getTodoList() {
@@ -52,8 +80,35 @@ export class TodoRepository implements ITodoRepository {
 	async deleteComment() {
 		const {} = await fetch(``);
 	}
-}
 
-container.register('TodoRepository', {
-	useClass: TodoRepository,
-});
+	async updateTitle() {
+		const {} = await fetch(``);
+	}
+
+	async updateDescription() {
+		const {} = await fetch(``);
+	}
+	async updateSorKey() {
+		const {} = await fetch(``);
+	}
+
+	async updateStartDate() {
+		const {} = await fetch(``);
+	}
+
+	async updateEndDate() {
+		const {} = await fetch(``);
+	}
+
+	async updateDueDate() {
+		const {} = await fetch(``);
+	}
+	async deleteTag(tagId: number) {
+		console.log('deleteTag');
+		const { error } = await supabase.from('tags').delete().eq('id', tagId);
+		if (error) throw new Error('failed to delete tag');
+	}
+	async addTag() {
+		const {} = await fetch(``);
+	}
+}
