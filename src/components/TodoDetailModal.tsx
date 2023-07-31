@@ -2,6 +2,7 @@ import {
 	Status,
 	Todo,
 	TodoDetail,
+	addTag,
 	deleteTag,
 	updateDescription,
 	updateTitle,
@@ -16,11 +17,14 @@ import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
+import AddIcon from '@mui/icons-material/Add';
+import AlarmOnIcon from '@mui/icons-material/AlarmOn';
 import { AppDispatch } from '../stores/store';
 import { useDispatch } from 'react-redux';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { TextField } from '@mui/material';
-import { ClassNames } from '@emotion/react';
+import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
 const TodoDetailModal = (props: {
 	todo: Todo;
@@ -39,6 +43,9 @@ const TodoDetailModal = (props: {
 
 	const [isEditingDescription, setIsEditingDescription] = useState(false);
 	const [editedDescription, setEditedDescription] = useState('');
+
+	const [isAddingTag, setIsAddingTag] = useState(false);
+	const [addedTag, setAddedTag] = useState('');
 
 	const onEditTitle = (initialTitle: string) => {
 		setEditedTitle(initialTitle);
@@ -68,6 +75,22 @@ const TodoDetailModal = (props: {
 
 	const onRollbackDescription = () => {
 		setIsEditingDescription(false);
+	};
+
+	const onAddTitle = () => {
+		console.log('onAddTitle');
+		setAddedTag('');
+		setIsAddingTag(true);
+	};
+
+	const onCommitTag = () => {
+		console.log(editedTitle);
+		dispatch(addTag(id, status, addedTag));
+		setIsAddingTag(false);
+	};
+
+	const onRollbackTag = () => {
+		setIsAddingTag(false);
 	};
 
 	return (
@@ -176,34 +199,91 @@ const TodoDetailModal = (props: {
 					)}
 				</div>
 				<hr className='' />
-				<div className='px-4 py-2 '>
-					<div className='flex flex-wrap gap-x-4 gap-y-1 justify-center '>
+				<div className=' py-2 '>
+					<div className='flex flex-wrap gap-x-4 gap-y-1 items-center '>
 						{tags.length !== 0 ? (
-							tags.map(({ id: tagId, name }) => {
-								return (
-									<>
-										<div className='flex items-center'>
-											<div className='rounded-md px-2 bg-gray-800 text-xs h-5 pt-0.5 '>
-												{name}
+							<div className='flex mr-auto  flex-grow justify-center'>
+								{tags.map(({ id: tagId, name }) => {
+									console.log(isAddingTag);
+									return (
+										<>
+											<div className='flex items-center'>
+												<div className='rounded-md px-2 bg-gray-800 text-xs h-5 pt-0.5 '>
+													{name}
+												</div>
+												<CancelIcon
+													className='cursor-pointer'
+													sx={{
+														width: '16px',
+														position: 'relative',
+														bottom: '12px',
+														right: '8px',
+													}}
+													onClick={() => dispatch(deleteTag(id, status, tagId))}
+												/>
 											</div>
-											<CancelIcon
-												className='cursor-pointer'
-												sx={{
-													width: '16px',
-													position: 'relative',
-													bottom: '12px',
-													right: '8px',
-												}}
-												onClick={() => dispatch(deleteTag(id, status, tagId))}
-											/>
-										</div>
-									</>
-								);
-							})
+										</>
+									);
+								})}
+							</div>
 						) : (
-							<div className='text-xs'>No tag is set on this todo...</div>
+							<div className='text-xs flex justify-center flex-grow mr-auto'>
+								No tag is set on this todo...
+							</div>
+						)}
+						{isAddingTag && (
+							<div className='w-25'>
+								<TextField
+									value={addedTag}
+									onChange={(e) => {
+										console.log(e);
+										setAddedTag(e.target.value);
+									}}
+									size='small'
+									fullWidth
+									inputProps={{
+										style: {
+											color: 'white',
+											fontSize: '12px',
+											padding: '4px',
+
+											// single quote required to make it work
+											fontFamily: "'M PLUS Rounded 1c'",
+										},
+									}}
+								/>
+							</div>
+						)}
+						{!isAddingTag ? (
+							<div className='mt-auto border rounded-md cursor-pointer'>
+								<AddIcon className='' onClick={onAddTitle} />
+							</div>
+						) : (
+							<div className='flex'>
+								<div className='mt-auto border rounded-md cursor-pointer mx-2'>
+									<CheckIcon className='' onClick={onCommitTag} />
+								</div>
+								<div className='mt-auto border rounded-md cursor-pointer'>
+									<CloseIcon className='' onClick={onRollbackTag} />
+								</div>
+							</div>
 						)}
 					</div>
+				</div>
+				<hr className='' />
+				<div className='px-4  rounded-b-md flex text-sm'>
+					<div className='w-2/4 border-r flex justify-center items-center py-1 gap-x-4'>
+						<PlayArrowIcon /> {comments.length}
+					</div>
+					<div className='flex justify-center items-center py-1 w-2/4 gap-x-4'>
+						<DoneOutlineIcon />
+						{likes.length}
+					</div>
+				</div>
+				<hr className='' />
+				<div className='flex justify-center items-center py-1 gap-x-4'>
+					<AlarmOnIcon />
+					{likes.length}
 				</div>
 				<hr className='' />
 				<div className='px-4  rounded-b-md flex text-sm'>

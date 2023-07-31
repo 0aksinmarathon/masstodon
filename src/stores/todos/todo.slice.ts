@@ -112,6 +112,28 @@ const todoSlice = createSlice({
 			);
 		},
 
+		addTag(state, action) {
+			const { todoId, status, name } = action.payload;
+			const todoIndex = state.myTodos[status as Status].findIndex(
+				({ id }) => id === todoId
+			);
+			state.myTodos[status as Status][todoIndex].tags = [
+				...state.myTodos[status as Status][todoIndex].tags,
+				{
+					id: todoId,
+					name,
+				},
+			];
+			if (!state.myCurrentTodo) return;
+			state.myCurrentTodo.tags = [
+				...state.myCurrentTodo.tags,
+				{
+					id: todoId,
+					name,
+				},
+			];
+		},
+
 		updateTitle(state, action) {
 			console.log('action updateTitle');
 			const { todoId, status, title } = action.payload;
@@ -182,6 +204,18 @@ export function deleteTag(todoId: number, status: Status, tagId: number) {
 		dispatch({
 			type: 'todo/deleteTag',
 			payload: { todoId, status, tagId },
+		});
+	};
+}
+
+export function addTag(todoId: number, status: Status, name: string) {
+	return async (dispatch: Dispatch) => {
+		console.log('deleteTag thunk');
+		const todoRepository = container.resolve<ITodoRepository>('TodoRepository');
+		await todoRepository.addTag(todoId, name);
+		dispatch({
+			type: 'todo/addTag',
+			payload: { todoId, status, name },
 		});
 	};
 }

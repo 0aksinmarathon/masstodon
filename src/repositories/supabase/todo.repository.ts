@@ -1,8 +1,6 @@
-import { container, injectable, singleton } from 'tsyringe';
 import { ITodoRepository } from '../todo.repository.interface';
 import { supabase } from './supabase';
 import { SupabaseClient } from '@supabase/supabase-js';
-import ContinuousSlider from '../../components/Slider';
 
 // @injectable()
 export class TodoRepository implements ITodoRepository {
@@ -118,7 +116,10 @@ export class TodoRepository implements ITodoRepository {
 		const { error } = await supabase.from('tags').delete().eq('id', tagId);
 		if (error) throw new Error('failed to delete tag');
 	}
-	async addTag() {
-		const {} = await fetch(``);
+	async addTag(todoId: number, name: string) {
+		const { error } = await supabase
+			.from('tags')
+			.insert({ todo_id: todoId, name });
+		if (error) throw new Error('failed to add tag');
 	}
 }
