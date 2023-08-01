@@ -7,9 +7,10 @@ import {
 	updateDescription,
 	updateTitle,
 } from '../stores/todos/todo.slice';
+import './TodoDetailModal.scss';
 import Modal from '@mui/material/Modal';
 import { Circle } from 'rc-progress';
-import { getColor } from '../common/util/getColor';
+import { getColor } from '../common/util/get-color';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import InsertCommentIcon from '@mui/icons-material/InsertComment';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -19,12 +20,17 @@ import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
 import AlarmOnIcon from '@mui/icons-material/AlarmOn';
+import { parse, parseISO } from 'date-fns';
 import { AppDispatch } from '../stores/store';
 import { useDispatch } from 'react-redux';
 import { useState } from 'react';
 import { TextField } from '@mui/material';
 import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import { getDisplayDate } from '../common/util/date';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+// import "../../assets/styles/date-picker.css";
 
 const TodoDetailModal = (props: {
 	todo: Todo;
@@ -32,7 +38,19 @@ const TodoDetailModal = (props: {
 	handleClose: any;
 }) => {
 	const {
-		todo: { id, title, description, status, progress, tags, comments, likes },
+		todo: {
+			id,
+			title,
+			description,
+			status,
+			progress,
+			tags,
+			comments,
+			startDate,
+			endDate,
+			dueDate,
+			likes,
+		},
 		open,
 		handleClose,
 	} = props;
@@ -273,17 +291,47 @@ const TodoDetailModal = (props: {
 				<hr className='' />
 				<div className='px-4  rounded-b-md flex text-sm'>
 					<div className='w-2/4 border-r flex justify-center items-center py-1 gap-x-4'>
-						<PlayArrowIcon /> {comments.length}
+						<PlayArrowIcon />{' '}
+						{startDate ? (
+							<DatePicker
+								selected={startDate ? parseISO(startDate) : null}
+								onChange={() => {
+									console.log('onChange react-datepicker');
+								}}
+								isClearable
+								dateFormat='yyyy/MM/dd'
+								placeholderText='Start Date'
+							/>
+						) : (
+							'-'
+						)}
 					</div>
 					<div className='flex justify-center items-center py-1 w-2/4 gap-x-4'>
 						<DoneOutlineIcon />
-						{likes.length}
+						{endDate ? (
+							<DatePicker
+								selected={endDate ? parseISO(endDate) : null}
+								onChange={() => {}}
+								isClearable
+								dateFormat='yyyy/MM/dd'
+								placeholderText='End Date'
+							/>
+						) : (
+							'-'
+						)}
 					</div>
 				</div>
 				<hr className='' />
-				<div className='flex justify-center items-center py-1 gap-x-4'>
+				<div className='flex justify-center items-center py-1 gap-x-4 text-sm'>
 					<AlarmOnIcon />
-					{likes.length}
+
+					<DatePicker
+						selected={dueDate ? parseISO(dueDate) : null}
+						onChange={() => {}}
+						isClearable
+						dateFormat='yyyy/MM/dd'
+						placeholderText='Due Date'
+					/>
 				</div>
 				<hr className='' />
 				<div className='px-4  rounded-b-md flex text-sm'>

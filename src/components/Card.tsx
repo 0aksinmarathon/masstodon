@@ -7,7 +7,7 @@ import InsertCommentIcon from '@mui/icons-material/InsertComment';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 
-import { getColor } from '../common/util/getColor';
+import { getColor } from '../common/util/get-color';
 
 const Card = (props: { todo: Todo }) => {
 	const { id, title, description, progress, tags, comments, likes, user } =

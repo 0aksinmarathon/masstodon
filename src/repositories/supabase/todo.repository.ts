@@ -25,7 +25,14 @@ export class TodoRepository implements ITodoRepository {
 			.eq('id', id)
 			.is('deleted_at', null);
 		if (error) throw new Error('failed to get todo detail');
-		return data;
+		return data.map((todo) => {
+			return {
+				...todo,
+				startDate: todo.start_date,
+				endDate: todo.end_date,
+				dueDate: todo.due_date,
+			};
+		});
 	}
 
 	async getMyTodoList() {
@@ -44,10 +51,21 @@ export class TodoRepository implements ITodoRepository {
 			.is('deleted_at', null);
 		console.log(data);
 		if (error) throw new Error('failed to get my todo list');
+		console.log(data);
+		const processedData = data.map((todo) => {
+			return {
+				...todo,
+				startDate: todo.start_date,
+				endDate: todo.end_date,
+				dueDate: todo.due_date,
+			};
+		});
 		return {
-			planning: data?.filter(({ status }) => status === 'planning'),
-			workInProgress: data?.filter(({ status }) => status === 'workInProgress'),
-			finished: data?.filter(({ status }) => status === 'finished'),
+			planning: processedData?.filter(({ status }) => status === 'planning'),
+			workInProgress: processedData?.filter(
+				({ status }) => status === 'workInProgress'
+			),
+			finished: processedData?.filter(({ status }) => status === 'finished'),
 		};
 	}
 
