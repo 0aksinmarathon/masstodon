@@ -1,8 +1,8 @@
-import { container } from 'tsyringe';
 import { ITodoRepository } from '../todo.repository.interface';
 import { supabase } from './supabase';
 import { SupabaseClient } from '@supabase/supabase-js';
 
+// @injectable()
 export class TodoRepository implements ITodoRepository {
 	private supabase: SupabaseClient = supabase;
 	constructor() {
@@ -13,16 +13,60 @@ export class TodoRepository implements ITodoRepository {
 		console.log('getTodoDetail');
 		const { data, error } = await this.supabase
 			.from('todos')
-			.select('*')
+			.select(
+				`
+			*,
+			tags ( id, name ),
+			comments ( id, content, user: user_id (name, picture) ),
+			likes ( user_id ),
+			user: user_id ( name, picture )
+			`
+			)
 			.eq('id', id)
 			.is('deleted_at', null);
-
 		if (error) throw new Error('failed to get todo detail');
-		return data;
+		return data.map((todo) => {
+			return {
+				...todo,
+				startDate: todo.start_date,
+				endDate: todo.end_date,
+				dueDate: todo.due_date,
+			};
+		});
 	}
 
 	async getMyTodoList() {
-		const {} = await fetch(``);
+		console.log('getMyTodoList');
+		const { data, error } = await this.supabase
+			.from('todos')
+			.select(
+				`
+			*,
+			tags ( id, name ),
+			comments ( id ),
+			likes ( user_id ),
+			user: user_id ( name, picture )
+			`
+			)
+			.is('deleted_at', null);
+		console.log(data);
+		if (error) throw new Error('failed to get my todo list');
+		console.log(data);
+		const processedData = data.map((todo) => {
+			return {
+				...todo,
+				startDate: todo.start_date,
+				endDate: todo.end_date,
+				dueDate: todo.due_date,
+			};
+		});
+		return {
+			planning: processedData?.filter(({ status }) => status === 'planning'),
+			workInProgress: processedData?.filter(
+				({ status }) => status === 'workInProgress'
+			),
+			finished: processedData?.filter(({ status }) => status === 'finished'),
+		};
 	}
 
 	async getTodoList() {
@@ -52,8 +96,54 @@ export class TodoRepository implements ITodoRepository {
 	async deleteComment() {
 		const {} = await fetch(``);
 	}
-}
 
-container.register('TodoRepository', {
-	useClass: TodoRepository,
-});
+	async updateTitle(todoId: number, title: string) {
+		console.log('updateTitle');
+		const { error } = await supabase
+			.from('todos')
+			.update({ title })
+			.eq('id', todoId);
+		if (error) throw new Error('failed to update title');
+	}
+
+	async updateDescription(todoId: number, description: string) {
+		console.log('updateTitle');
+		const { error } = await supabase
+			.from('todos')
+			.update({ description })
+			.eq('id', todoId);
+		if (error) throw new Error('failed to update desc');
+	}
+	async updateSorKey() {
+		const {} = await fetch(``);
+	}
+
+	async updateStartDate(todoId: number, startDate: string | null) {
+		console.log('todoRepository.updateStartDate');
+		const { error } = await supabase
+			.from('todos')
+			.update({ start_date: startDate ? new Date(startDate) : null })
+			.eq('id', todoId);
+
+		if (error) throw new Error('failed to add tag');
+	}
+
+	async updateEndDate() {
+		const {} = await fetch(``);
+	}
+
+	async updateDueDate() {
+		const {} = await fetch(``);
+	}
+	async deleteTag(tagId: number) {
+		console.log('deleteTag');
+		const { error } = await supabase.from('tags').delete().eq('id', tagId);
+		if (error) throw new Error('failed to delete tag');
+	}
+	async addTag(todoId: number, name: string) {
+		const { error } = await supabase
+			.from('tags')
+			.insert({ todo_id: todoId, name });
+		if (error) throw new Error('failed to add tag');
+	}
+}

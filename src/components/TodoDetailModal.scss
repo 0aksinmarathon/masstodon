@@ -1,0 +1,13 @@
+.progress-bar-bg {
+	@apply to-pink-500;
+}
+
+.react-datepicker-ignore-onclickoutside,
+.react-datepicker__input-container input {
+	@apply bg-gray-500 border text-blue-100 px-1;
+	font-family: 'M PLUS Rounded 1c';
+}
+
+.react-datepicker__close-icon::after {
+	@apply bg-gray-100  text-gray-400 w-4 font-bold #{!important};
+}

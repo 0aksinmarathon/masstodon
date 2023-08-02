@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { dummyData } from '../dummy-data';
+import { dummyData, dummyDetail } from '../dummy-data';
 import {
 	DragDropContext,
 	Draggable,
@@ -9,91 +9,101 @@ import {
 import Card from './Card';
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
-import { TodoRepository } from '../repositories/supabase/todo.repository';
-import { setCurrentTodo } from '../stores/todos/todo.slice';
+import {
+	Status,
+	Todo,
+	TodoDetail,
+	exchangeTodos,
+	setCurrentTodo,
+	setMyTodos,
+} from '../stores/todos/todo.slice';
+import { AppDispatch, RootState } from '../stores/store';
+import TodoDetailModal from './TodoDetailModal';
+import { nextTick } from 'process';
 
 const Board = () => {
-	const a = useSelector((store) => store.todo);
-	const dispatch = useDispatch();
-	// dispatch(setCurrentTodo(1));
-	const c = new TodoRepository();
-	c.getTodoDetail(1);
-	// const b = () => {
-	// 	dispatch();
-	// };
+	const currentTodoDetail = useSelector(
+		(store: RootState) => store.todo.myCurrentTodo
+	);
+
+	const myTodos = useSelector((store: RootState) => store.todo.myTodos);
+
+	const dispatch = useDispatch<AppDispatch>();
 	useEffect(() => {
-		console.log(a);
+		// console.log(a);
+		dispatch(setMyTodos());
 	}, []);
 	const [data, setData] = useState(dummyData);
 
-	const onDragEnd = (result: DropResult) => {
-		const { source, destination } = result;
-		if (!destination) return;
-		if (source.droppableId !== destination?.droppableId) {
-			const sourceColIndex = data.findIndex((e) => e.id === source.droppableId);
-			const sourceCol = data[sourceColIndex];
-			const destinationColIndex = data.findIndex(
-				(e) => e.id === destination.droppableId
-			);
-			const destinationCol = data[destinationColIndex];
-			const sourceTask = [...sourceCol.tasks];
-			const destinationTask = [...destinationCol.tasks];
-			const [removed] = sourceTask.splice(source.index, 1);
-			destinationTask.splice(destination?.index, 0, removed);
-			data[sourceColIndex].tasks = sourceTask;
-			data[destinationColIndex].tasks = destinationTask;
-			setData(data);
-		} else {
-			const sourceColIndex = data.findIndex((e) => e.id === source.droppableId);
-			const sourceCol = data[sourceColIndex];
-			const sourceTask = [...sourceCol.tasks];
-			const [removed] = sourceTask.splice(source.index, 1);
-			sourceTask.splice(destination?.index, 0, removed);
-			data[sourceColIndex].tasks = sourceTask;
-			setData(data);
-		}
+	const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+	// const [currentTodoDetail, setCurrentTodoDetail] = useState<Todo | null>(null);
+
+	const onDragEnd = async (result: DropResult) => {
+		await dispatch(exchangeTodos(result));
+	};
+
+	const onClickCard = (id: number) => {
+		dispatch(setCurrentTodo(id));
+		if (!currentTodoDetail) return;
+		setIsDetailModalOpen(true);
 	};
 
 	return (
 		<DragDropContext onDragEnd={onDragEnd}>
-			<div className='flex'>
-				{data.map((column) => (
-					<Droppable key={column.id} droppableId={column.id}>
-						{(provided) => (
-							<div
-								ref={provided.innerRef}
-								{...provided.droppableProps}
-								className='trello-section'
-							>
-								<div className='trello-section-title'>{column.title}</div>
-								<div className='trello-section-content flex flex-col gap-y-2'>
-									{column.tasks.map((task, index) => (
-										<Draggable
-											draggableId={task.id}
-											index={index}
-											key={task.id}
-										>
-											{(provided2, snapshot) => (
-												<div
-													ref={provided2.innerRef}
-													{...provided2.draggableProps}
-													{...provided2.dragHandleProps}
-													style={{
-														...provided2.draggableProps.style,
-														opacity: snapshot.isDragging ? '0.3' : '1',
-													}}
-													className='grid gap-x-5'
+			{currentTodoDetail ? (
+				<TodoDetailModal
+					open={isDetailModalOpen}
+					handleClose={() => setIsDetailModalOpen(false)}
+					todo={currentTodoDetail}
+				/>
+			) : null}
+			<div className='flex mt-5 px-4'>
+				{data.map((column) => {
+					return (
+						<Droppable key={column.id} droppableId={column.id}>
+							{(provided) => (
+								<div
+									ref={provided.innerRef}
+									{...provided.droppableProps}
+									// draggable hidden behind droppable when drop-shadow applies on droppable
+									className='p-2.5 rounded-lg ml-2.5 w-[400px]  bg-gray-400'
+								>
+									<div className='font-bold text-xl mb-2.5'>{column.title}</div>
+									<div className='flex flex-col gap-y-4'>
+										{myTodos[column.id as Status].map((todo, index) => {
+											console.log(12321);
+											return (
+												<Draggable
+													draggableId={String(todo.id)}
+													index={index}
+													key={String(todo.id)}
 												>
-													<Card task={task} />
-												</div>
-											)}
-										</Draggable>
-									))}
+													{(provided2, snapshot) => (
+														<div
+															ref={provided2.innerRef}
+															{...provided2.draggableProps}
+															{...provided2.dragHandleProps}
+															style={{
+																...provided2.draggableProps.style,
+																opacity: snapshot.isDragging ? '0.3' : '1',
+															}}
+															className='grid !static'
+															onClick={() => {
+																onClickCard(todo.id);
+															}}
+														>
+															<Card todo={todo} />
+														</div>
+													)}
+												</Draggable>
+											);
+										})}
+									</div>
 								</div>
-							</div>
-						)}
-					</Droppable>
-				))}
+							)}
+						</Droppable>
+					);
+				})}
 			</div>
 		</DragDropContext>
 	);
