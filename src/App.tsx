@@ -10,15 +10,15 @@ function App() {
 	container.register('TodoRepository', TodoRepository);
 	console.log('App');
 	return (
-		<LocalizationProvider dateAdapter={AdapterDateFns}>
-			<div className='text-xl'>
-				<Header />
-				<div className='flex'>
-					<SideBar />
-					<Board />
-				</div>
+		// <LocalizationProvider dateAdapter={AdapterDateFns}>
+		<div className='text-xl'>
+			<Header />
+			<div className='flex'>
+				<SideBar />
+				<Board />
 			</div>
-		</LocalizationProvider>
+		</div>
+		// </LocalizationProvider>
 	);
 }
 

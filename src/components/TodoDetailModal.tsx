@@ -5,6 +5,9 @@ import {
 	addTag,
 	deleteTag,
 	updateDescription,
+	updateDueDate,
+	updateEndDate,
+	updateStartDate,
 	updateTitle,
 } from '../stores/todos/todo.slice';
 import './TodoDetailModal.scss';
@@ -292,33 +295,27 @@ const TodoDetailModal = (props: {
 				<div className='px-4  rounded-b-md flex text-sm'>
 					<div className='w-2/4 border-r flex justify-center items-center py-1 gap-x-4'>
 						<PlayArrowIcon />{' '}
-						{startDate ? (
-							<DatePicker
-								selected={startDate ? parseISO(startDate) : null}
-								onChange={() => {
-									console.log('onChange react-datepicker');
-								}}
-								isClearable
-								dateFormat='yyyy/MM/dd'
-								placeholderText='Start Date'
-							/>
-						) : (
-							'-'
-						)}
+						<DatePicker
+							selected={startDate ? parseISO(startDate) : null}
+							onChange={(e) => {
+								dispatch(updateStartDate(id, status, e));
+							}}
+							isClearable
+							dateFormat='yyyy/MM/dd'
+							placeholderText='Start Date'
+						/>
 					</div>
 					<div className='flex justify-center items-center py-1 w-2/4 gap-x-4'>
 						<DoneOutlineIcon />
-						{endDate ? (
-							<DatePicker
-								selected={endDate ? parseISO(endDate) : null}
-								onChange={() => {}}
-								isClearable
-								dateFormat='yyyy/MM/dd'
-								placeholderText='End Date'
-							/>
-						) : (
-							'-'
-						)}
+						<DatePicker
+							selected={endDate ? parseISO(endDate) : null}
+							onChange={(e) => {
+								dispatch(updateEndDate(id, status, e));
+							}}
+							isClearable
+							dateFormat='yyyy/MM/dd'
+							placeholderText='End Date'
+						/>
 					</div>
 				</div>
 				<hr className='' />
@@ -327,7 +324,9 @@ const TodoDetailModal = (props: {
 
 					<DatePicker
 						selected={dueDate ? parseISO(dueDate) : null}
-						onChange={() => {}}
+						onChange={(e) => {
+							dispatch(updateDueDate(id, status, e));
+						}}
 						isClearable
 						dateFormat='yyyy/MM/dd'
 						placeholderText='Due Date'

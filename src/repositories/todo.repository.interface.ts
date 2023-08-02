@@ -12,4 +12,7 @@ export interface ITodoRepository {
 	addTag;
 	updateTitle;]
 	updateDescription;
+	updateStartDate;
+	updateEndDate;
+	updateDueDate;
 }

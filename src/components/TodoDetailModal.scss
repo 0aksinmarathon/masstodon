@@ -9,5 +9,5 @@
 }
 
 .react-datepicker__close-icon::after {
-	@apply bg-white text-gray-400 h-2;
+	@apply bg-gray-100  text-gray-400 w-4 font-bold #{!important};
 }

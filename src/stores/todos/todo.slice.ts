@@ -2,6 +2,7 @@ import { Dispatch, createSlice } from '@reduxjs/toolkit';
 import { container } from 'tsyringe';
 import { ITodoRepository } from '../../repositories/todo.repository.interface';
 import { DropResult } from 'react-beautiful-dnd';
+import { formatISO } from 'date-fns';
 
 export interface Todo {
 	id: number;
@@ -155,6 +156,39 @@ const todoSlice = createSlice({
 			if (!state.myCurrentTodo) return;
 			state.myCurrentTodo.description = description;
 		},
+
+		updateStartDate(state, action) {
+			console.log('action updateStartDate');
+			const { todoId, status, startDate } = action.payload;
+			const todoIndex = state.myTodos[status as Status].findIndex(
+				({ id }) => id === todoId
+			);
+			state.myTodos[status as Status][todoIndex].startDate = startDate;
+			if (!state.myCurrentTodo) return;
+			state.myCurrentTodo.startDate = startDate;
+		},
+
+		updateEndDate(state, action) {
+			console.log('action updateEndDate');
+			const { todoId, status, endDate } = action.payload;
+			const todoIndex = state.myTodos[status as Status].findIndex(
+				({ id }) => id === todoId
+			);
+			state.myTodos[status as Status][todoIndex].endDate = endDate;
+			if (!state.myCurrentTodo) return;
+			state.myCurrentTodo.endDate = endDate;
+		},
+
+		updateDueDate(state, action) {
+			console.log('action updatedueDate');
+			const { todoId, status, dueDate } = action.payload;
+			const todoIndex = state.myTodos[status as Status].findIndex(
+				({ id }) => id === todoId
+			);
+			state.myTodos[status as Status][todoIndex].dueDate = dueDate;
+			if (!state.myCurrentTodo) return;
+			state.myCurrentTodo.dueDate = dueDate;
+		},
 	},
 });
 
@@ -244,6 +278,66 @@ export function updateDescription(
 		dispatch({
 			type: 'todo/updateDescription',
 			payload: { todoId, status, description },
+		});
+	};
+}
+
+export function updateStartDate(
+	todoId: number,
+	status: Status,
+	startDate: Date | null
+) {
+	return async (dispatch: Dispatch) => {
+		console.log('updateStartDate thunk');
+		const todoRepository = container.resolve<ITodoRepository>('TodoRepository');
+		await todoRepository.updateStartDate(todoId, startDate);
+		dispatch({
+			type: 'todo/updateStartDate',
+			payload: {
+				todoId,
+				status,
+				startDate: startDate ? formatISO(startDate) : null,
+			},
+		});
+	};
+}
+
+export function updateEndDate(
+	todoId: number,
+	status: Status,
+	endDate: Date | null
+) {
+	return async (dispatch: Dispatch) => {
+		console.log('updateEndDate thunk');
+		const todoRepository = container.resolve<ITodoRepository>('TodoRepository');
+		await todoRepository.updateEndDate(todoId, endDate);
+		dispatch({
+			type: 'todo/updateEndDate',
+			payload: {
+				todoId,
+				status,
+				endDate: endDate ? formatISO(endDate) : null,
+			},
+		});
+	};
+}
+
+export function updateDueDate(
+	todoId: number,
+	status: Status,
+	dueDate: Date | null
+) {
+	return async (dispatch: Dispatch) => {
+		console.log('updateDueDate thunk');
+		const todoRepository = container.resolve<ITodoRepository>('TodoRepository');
+		await todoRepository.updateDueDate(todoId, dueDate);
+		dispatch({
+			type: 'todo/updateDueDate',
+			payload: {
+				todoId,
+				status,
+				dueDate: dueDate ? formatISO(dueDate) : null,
+			},
 		});
 	};
 }

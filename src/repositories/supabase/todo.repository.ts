@@ -118,8 +118,14 @@ export class TodoRepository implements ITodoRepository {
 		const {} = await fetch(``);
 	}
 
-	async updateStartDate() {
-		const {} = await fetch(``);
+	async updateStartDate(todoId: number, startDate: string | null) {
+		console.log('todoRepository.updateStartDate');
+		const { error } = await supabase
+			.from('todos')
+			.update({ start_date: startDate ? new Date(startDate) : null })
+			.eq('id', todoId);
+
+		if (error) throw new Error('failed to add tag');
 	}
 
 	async updateEndDate() {
