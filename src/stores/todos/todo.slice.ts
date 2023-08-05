@@ -37,8 +37,9 @@ export interface TodoDetail {
 
 export interface Comment {
 	id: number;
-	userName: string;
+	user: { name: string; picture: string };
 	content: string;
+	createdAt: string;
 }
 export interface Tag {
 	id: number;
@@ -207,6 +208,7 @@ const todoSlice = createSlice({
 			const todoIndex = state.myTodos[status as Status].findIndex(
 				({ id }) => id === todoId
 			);
+			console.log(state.myTodos[status as Status][todoIndex].likes);
 			state.myTodos[status as Status][todoIndex].likes = state.myTodos[
 				status as Status
 			][todoIndex].likes.filter((like) => like.userId !== userId);
@@ -214,6 +216,17 @@ const todoSlice = createSlice({
 			state.myCurrentTodo.likes = state.myCurrentTodo.likes.filter(
 				(like) => like.userId !== userId
 			);
+		},
+
+		updateProgress(state, action) {
+			console.log('action updateProgress');
+			const { todoId, status, progress } = action.payload;
+			const todoIndex = state.myTodos[status as Status].findIndex(
+				({ id }) => id === todoId
+			);
+			state.myTodos[status as Status][todoIndex].progress = progress;
+			if (!state.myCurrentTodo) return;
+			state.myCurrentTodo.progress = progress;
 		},
 	},
 });
@@ -396,6 +409,27 @@ export function deleteLike(todoId: number, status: Status, userId: number) {
 				todoId,
 				status,
 				userId,
+			},
+		});
+	};
+}
+
+export function updateProgress(
+	todoId: number,
+	status: Status,
+	progress: number
+) {
+	return async (dispatch: Dispatch) => {
+		console.log('updateProgress thunk');
+
+		const todoRepository = container.resolve<ITodoRepository>('TodoRepository');
+		await todoRepository.updateProgress(todoId, progress);
+		dispatch({
+			type: 'todo/updateProgress',
+			payload: {
+				todoId,
+				status,
+				progress,
 			},
 		});
 	};

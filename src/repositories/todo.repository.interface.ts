@@ -10,11 +10,12 @@ export interface ITodoRepository {
 	deleteComment;
 	deleteTag;
 	addTag;
-	updateTitle;]
+	updateTitle;
 	updateDescription;
 	updateStartDate;
 	updateEndDate;
 	updateDueDate;
 	addLike;
 	deleteLike;
+	updateProgress;
 }

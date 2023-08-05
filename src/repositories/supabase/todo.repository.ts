@@ -17,7 +17,7 @@ export class TodoRepository implements ITodoRepository {
 				`
 			*,
 			tags ( id, name ),
-			comments ( id, content, user: user_id (name, picture) ),
+			comments ( id, content, user: user_id (name, picture), created_at ),
 			likes ( user_id ),
 			user: user_id ( name, picture )
 			`
@@ -34,6 +34,12 @@ export class TodoRepository implements ITodoRepository {
 				likes: todo.likes.map((like) => {
 					return {
 						userId: like.user_id,
+					};
+				}),
+				comments: todo.comments.map((comment) => {
+					return {
+						...comment,
+						createdAt: comment.created_at,
 					};
 				}),
 			};
@@ -169,5 +175,13 @@ export class TodoRepository implements ITodoRepository {
 			.eq('todo_id', todoId)
 			.eq('user_id', userId);
 		if (error) throw new Error('failed to delete like');
+	}
+
+	async updateProgress(todoId: number, progress: number) {
+		const { error } = await supabase
+			.from('todos')
+			.update({ progress })
+			.eq('id', todoId);
+		if (error) throw new Error('failed to update progress');
 	}
 }

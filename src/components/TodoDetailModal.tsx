@@ -5,11 +5,12 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 import EditIcon from '@mui/icons-material/Edit';
-import InsertCommentIcon from '@mui/icons-material/InsertComment';
+import PercentIcon from '@mui/icons-material/Percent';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { TextField } from '@mui/material';
 import Modal from '@mui/material/Modal';
-import { parseISO } from 'date-fns';
+import Slider from '@mui/material/Slider';
+import { format, parseISO } from 'date-fns';
 import { Circle } from 'rc-progress';
 import { useState } from 'react';
 import DatePicker from 'react-datepicker';
@@ -26,6 +27,7 @@ import {
 	updateDescription,
 	updateDueDate,
 	updateEndDate,
+	updateProgress,
 	updateStartDate,
 	updateTitle,
 } from '../stores/todos/todo.slice';
@@ -33,7 +35,7 @@ import './TodoDetailModal.scss';
 // import "../../assets/styles/date-picker.css";
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import { pink } from '@mui/material/colors';
+import { blueGrey, pink } from '@mui/material/colors';
 import { dummyUserId } from '../dummy-data';
 const TodoDetailModal = (props: {
 	todo: Todo;
@@ -57,10 +59,21 @@ const TodoDetailModal = (props: {
 		open,
 		handleClose,
 	} = props;
-	console.log(likes);
+	console.log(comments);
+	comments.forEach((comment) => {
+		console.log(comment.createdAt);
+		console.log(comment.createdAt.slice(0, 12));
+		console.log(parseISO(comment.createdAt));
+		console.log(format(parseISO(comment.createdAt), 'yyyy/MM/dd HH:mm'));
+		console.log(comment.createdAt instanceof Date);
+		console.log(comment.createdAt instanceof String);
+	});
 	const dispatch = useDispatch<AppDispatch>();
 	const [isEditingTitle, setIsEditingTitle] = useState(false);
 	const [editedTitle, setEditedTitle] = useState('');
+	const [tmpProgress, setTmpProgress] = useState(progress);
+	console.log(progress);
+	console.log(tmpProgress);
 
 	const [isEditingDescription, setIsEditingDescription] = useState(false);
 	const [editedDescription, setEditedDescription] = useState('');
@@ -129,7 +142,7 @@ const TodoDetailModal = (props: {
 					<div className='break-words line-clamp-3 text-xs mb-2 border w-[100px] flex justify-center items-center'>
 						{id}
 					</div>
-					<div className='flex'>
+					<div className='flex items-center'>
 						<button
 							className='flex justify-center items-center mr-4 border rounded-lg px-2 bg-white text-gray-400 cursor-pointer drop-shadow-hard1'
 							onClick={onClickLikeButton}
@@ -145,15 +158,16 @@ const TodoDetailModal = (props: {
 						</button>
 						<div className='w-[30px] opacity-75'>
 							<Circle
-								percent={progress}
+								percent={tmpProgress}
 								strokeWidth={20}
 								steps={{
 									count: 20,
 									space: 5,
 								}}
-								strokeColor={getColor(progress)}
+								strokeColor={getColor(tmpProgress)}
 							/>
 						</div>
+						<div className='w-10 ml-2 flex justify-end'>{tmpProgress}%</div>
 					</div>
 				</div>
 				<div className='flex justify-between items-center mt-2'>
@@ -356,14 +370,53 @@ const TodoDetailModal = (props: {
 					/>
 				</div>
 				<hr className='' />
-				<div className='px-4  rounded-b-md flex text-sm'>
-					<div className='w-2/4 border-r flex justify-center items-center py-1 gap-x-4'>
-						<InsertCommentIcon /> {comments.length}
+
+				<div className='px-4  rounded-b-md flex text-sm items-center'>
+					<div className='mr-3'>
+						<PercentIcon />
 					</div>
-					<div className='flex justify-center items-center py-1 w-2/4 gap-x-4'>
-						<FavoriteBorderIcon />
-						{likes.length}
+					<div className='w-full'>
+						<Slider
+							value={tmpProgress}
+							step={1}
+							marks
+							min={0}
+							max={100}
+							onChange={(e) => {
+								setTmpProgress(Number((e.target as HTMLInputElement).value));
+							}}
+							onChangeCommitted={() => {
+								dispatch(updateProgress(id, status, tmpProgress));
+							}}
+							style={{ color: blueGrey[900] }}
+						/>
 					</div>
+				</div>
+
+				<div className='mt-10 flex gap-y-2 flex-col'>
+					{[...comments]
+						.sort((a, b) => {
+							if (a.createdAt > b.createdAt) return 1;
+							else if (a.createdAt < b.createdAt) return -1;
+							else return 0;
+						})
+						.map((comment) => (
+							<div className='bg-gray-600 p-2 rounded-md'>
+								<div className='flex items-center '>
+									<img
+										src={comment.user.picture}
+										className='w-6 h-6 rounded-full mr-2'
+									/>
+									<div className='font-bold text-sm'>
+										{comment.user.name}{' '}
+										<span className='font-thin'>commented on</span>{' '}
+										{format(parseISO(comment.createdAt), 'yyyy/MM/dd HH:mm')}
+									</div>
+								</div>
+								<hr className='w-80 border-2 mt-2 border-dotted' />
+								<div className='mt-2 px-4'>{comment.content}</div>
+							</div>
+						))}
 				</div>
 			</div>
 		</Modal>
