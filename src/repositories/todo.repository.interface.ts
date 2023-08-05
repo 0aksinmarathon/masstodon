@@ -15,4 +15,6 @@ export interface ITodoRepository {
 	updateStartDate;
 	updateEndDate;
 	updateDueDate;
+	addLike;
+	deleteLike;
 }

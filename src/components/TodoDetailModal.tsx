@@ -1,8 +1,27 @@
+import AddIcon from '@mui/icons-material/Add';
+import AlarmOnIcon from '@mui/icons-material/AlarmOn';
+import CancelIcon from '@mui/icons-material/Cancel';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
+import EditIcon from '@mui/icons-material/Edit';
+import InsertCommentIcon from '@mui/icons-material/InsertComment';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import { TextField } from '@mui/material';
+import Modal from '@mui/material/Modal';
+import { parseISO } from 'date-fns';
+import { Circle } from 'rc-progress';
+import { useState } from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { useDispatch } from 'react-redux';
+import { getColor } from '../common/util/get-color';
+import { AppDispatch } from '../stores/store';
 import {
-	Status,
 	Todo,
-	TodoDetail,
+	addLike,
 	addTag,
+	deleteLike,
 	deleteTag,
 	updateDescription,
 	updateDueDate,
@@ -11,30 +30,11 @@ import {
 	updateTitle,
 } from '../stores/todos/todo.slice';
 import './TodoDetailModal.scss';
-import Modal from '@mui/material/Modal';
-import { Circle } from 'rc-progress';
-import { getColor } from '../common/util/get-color';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import InsertCommentIcon from '@mui/icons-material/InsertComment';
-import CancelIcon from '@mui/icons-material/Cancel';
-import CheckIcon from '@mui/icons-material/Check';
-import ClearIcon from '@mui/icons-material/Clear';
-import CloseIcon from '@mui/icons-material/Close';
-import EditIcon from '@mui/icons-material/Edit';
-import AddIcon from '@mui/icons-material/Add';
-import AlarmOnIcon from '@mui/icons-material/AlarmOn';
-import { parse, parseISO } from 'date-fns';
-import { AppDispatch } from '../stores/store';
-import { useDispatch } from 'react-redux';
-import { useState } from 'react';
-import { TextField } from '@mui/material';
-import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import { getDisplayDate } from '../common/util/date';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 // import "../../assets/styles/date-picker.css";
-
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import { pink } from '@mui/material/colors';
+import { dummyUserId } from '../dummy-data';
 const TodoDetailModal = (props: {
 	todo: Todo;
 	open: any;
@@ -57,7 +57,7 @@ const TodoDetailModal = (props: {
 		open,
 		handleClose,
 	} = props;
-
+	console.log(likes);
 	const dispatch = useDispatch<AppDispatch>();
 	const [isEditingTitle, setIsEditingTitle] = useState(false);
 	const [editedTitle, setEditedTitle] = useState('');
@@ -114,6 +114,14 @@ const TodoDetailModal = (props: {
 		setIsAddingTag(false);
 	};
 
+	const onClickLikeButton = () => {
+		if (likes.find((like) => like.userId === dummyUserId)) {
+			dispatch(deleteLike(id, status, dummyUserId));
+		} else {
+			dispatch(addLike(id, status, dummyUserId));
+		}
+	};
+
 	return (
 		<Modal open={open} onClose={handleClose}>
 			<div className='w-[800px] h-[400px] bg-gray-500 rounded-xl fixed inset-0 m-auto overflow-y-auto py-5 pl-5 pr-10 drop-shadow-hard2'>
@@ -121,16 +129,31 @@ const TodoDetailModal = (props: {
 					<div className='break-words line-clamp-3 text-xs mb-2 border w-[100px] flex justify-center items-center'>
 						{id}
 					</div>
-					<div className='w-[30px] opacity-75'>
-						<Circle
-							percent={progress}
-							strokeWidth={20}
-							steps={{
-								count: 20,
-								space: 5,
-							}}
-							strokeColor={getColor(progress)}
-						/>
+					<div className='flex'>
+						<button
+							className='flex justify-center items-center mr-4 border rounded-lg px-2 bg-white text-gray-400 cursor-pointer drop-shadow-hard1'
+							onClick={onClickLikeButton}
+						>
+							<div className='mr-1'>
+								{likes.find((like) => like.userId === dummyUserId) ? (
+									<FavoriteIcon style={{ fill: pink[200] }} />
+								) : (
+									<FavoriteBorderIcon />
+								)}
+							</div>
+							<div>{likes.length}</div>
+						</button>
+						<div className='w-[30px] opacity-75'>
+							<Circle
+								percent={progress}
+								strokeWidth={20}
+								steps={{
+									count: 20,
+									space: 5,
+								}}
+								strokeColor={getColor(progress)}
+							/>
+						</div>
 					</div>
 				</div>
 				<div className='flex justify-between items-center mt-2'>
@@ -338,7 +361,7 @@ const TodoDetailModal = (props: {
 						<InsertCommentIcon /> {comments.length}
 					</div>
 					<div className='flex justify-center items-center py-1 w-2/4 gap-x-4'>
-						<FavoriteIcon />
+						<FavoriteBorderIcon />
 						{likes.length}
 					</div>
 				</div>

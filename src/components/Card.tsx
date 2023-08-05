@@ -1,11 +1,11 @@
-import React from 'react';
-import { Todo } from '../stores/todos/todo.slice';
-import { Line, Circle } from 'rc-progress';
-import './Card.scss';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import InsertCommentIcon from '@mui/icons-material/InsertComment';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import InsertCommentIcon from '@mui/icons-material/InsertComment';
+import { Circle } from 'rc-progress';
+import React from 'react';
+import { Todo } from '../stores/todos/todo.slice';
+import './Card.scss';
 
 import { getColor } from '../common/util/get-color';
 

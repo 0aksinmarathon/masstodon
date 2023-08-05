@@ -1,6 +1,6 @@
+import { SupabaseClient } from '@supabase/supabase-js';
 import { ITodoRepository } from '../todo.repository.interface';
 import { supabase } from './supabase';
-import { SupabaseClient } from '@supabase/supabase-js';
 
 // @injectable()
 export class TodoRepository implements ITodoRepository {
@@ -31,6 +31,11 @@ export class TodoRepository implements ITodoRepository {
 				startDate: todo.start_date,
 				endDate: todo.end_date,
 				dueDate: todo.due_date,
+				likes: todo.likes.map((like) => {
+					return {
+						userId: like.user_id,
+					};
+				}),
 			};
 		});
 	}
@@ -58,6 +63,9 @@ export class TodoRepository implements ITodoRepository {
 				startDate: todo.start_date,
 				endDate: todo.end_date,
 				dueDate: todo.due_date,
+				likes: todo.likes.map((like) => {
+					userId: like.user_id;
+				}),
 			};
 		});
 		return {
@@ -145,5 +153,21 @@ export class TodoRepository implements ITodoRepository {
 			.from('tags')
 			.insert({ todo_id: todoId, name });
 		if (error) throw new Error('failed to add tag');
+	}
+
+	async addLike(todoId: number, userId: number) {
+		const { error } = await supabase
+			.from('likes')
+			.insert({ todo_id: todoId, user_id: userId });
+		if (error) throw new Error('failed to add like');
+	}
+
+	async deleteLike(todoId: number, userId: number) {
+		const { error } = await supabase
+			.from('likes')
+			.delete()
+			.eq('todo_id', todoId)
+			.eq('user_id', userId);
+		if (error) throw new Error('failed to delete like');
 	}
 }

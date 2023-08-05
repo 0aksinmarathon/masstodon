@@ -1,8 +1,8 @@
 import { Dispatch, createSlice } from '@reduxjs/toolkit';
+import { formatISO } from 'date-fns';
+import { DropResult } from 'react-beautiful-dnd';
 import { container } from 'tsyringe';
 import { ITodoRepository } from '../../repositories/todo.repository.interface';
-import { DropResult } from 'react-beautiful-dnd';
-import { formatISO } from 'date-fns';
 
 export interface Todo {
 	id: number;
@@ -17,7 +17,7 @@ export interface Todo {
 	sortKey: number;
 	tags: Tag[];
 	comments: Comment[];
-	likes: Likes[];
+	likes: Like[];
 	user: User;
 }
 export interface TodoDetail {
@@ -50,8 +50,8 @@ export interface User {
 	picture: string;
 }
 
-export interface Likes {
-	user_id: number;
+export interface Like {
+	userId: number;
 }
 
 export type Status = 'planning' | 'workInProgress' | 'finished';
@@ -188,6 +188,32 @@ const todoSlice = createSlice({
 			state.myTodos[status as Status][todoIndex].dueDate = dueDate;
 			if (!state.myCurrentTodo) return;
 			state.myCurrentTodo.dueDate = dueDate;
+		},
+
+		addLike(state, action) {
+			console.log('action addLike');
+			const { todoId, status, userId } = action.payload;
+			const todoIndex = state.myTodos[status as Status].findIndex(
+				({ id }) => id === todoId
+			);
+			state.myTodos[status as Status][todoIndex].likes.push({ userId });
+			if (!state.myCurrentTodo) return;
+			state.myCurrentTodo.likes.push({ userId });
+		},
+
+		deleteLike(state, action) {
+			console.log('action deleteLike');
+			const { todoId, status, userId } = action.payload;
+			const todoIndex = state.myTodos[status as Status].findIndex(
+				({ id }) => id === todoId
+			);
+			state.myTodos[status as Status][todoIndex].likes = state.myTodos[
+				status as Status
+			][todoIndex].likes.filter((like) => like.userId !== userId);
+			if (!state.myCurrentTodo) return;
+			state.myCurrentTodo.likes = state.myCurrentTodo.likes.filter(
+				(like) => like.userId !== userId
+			);
 		},
 	},
 });
@@ -337,6 +363,39 @@ export function updateDueDate(
 				todoId,
 				status,
 				dueDate: dueDate ? formatISO(dueDate) : null,
+			},
+		});
+	};
+}
+
+export function addLike(todoId: number, status: Status, userId: number) {
+	return async (dispatch: Dispatch) => {
+		console.log('addLike thunk');
+		const todoRepository = container.resolve<ITodoRepository>('TodoRepository');
+		await todoRepository.addLike(todoId, userId);
+		dispatch({
+			type: 'todo/addLike',
+			payload: {
+				todoId,
+				status,
+				userId,
+			},
+		});
+	};
+}
+
+export function deleteLike(todoId: number, status: Status, userId: number) {
+	return async (dispatch: Dispatch) => {
+		console.log('deleteLike thunk');
+
+		const todoRepository = container.resolve<ITodoRepository>('TodoRepository');
+		await todoRepository.deleteLike(todoId, userId);
+		dispatch({
+			type: 'todo/deleteLike',
+			payload: {
+				todoId,
+				status,
+				userId,
 			},
 		});
 	};
