@@ -11,6 +11,7 @@ import './TodoDetailModal.scss';
 // import "../../assets/styles/date-picker.css";
 import { TextField } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
+import { dummyUserId } from '../dummy-data';
 import {
 	Comment,
 	deleteComment,
@@ -20,6 +21,7 @@ import './Comment.scss';
 
 const Comment = (props: { comment: Comment }) => {
 	const { comment } = props;
+	console.log(comment);
 	const dispatch = useDispatch<AppDispatch>();
 	const currentTodoDetail = useSelector(
 		(store: RootState) => store.todo.myCurrentTodo
@@ -96,50 +98,51 @@ const Comment = (props: { comment: Comment }) => {
 						<div className='mt-2 px-4 break-words'>{comment.content}</div>
 					)}
 				</div>
-
-				<div className='ml-2'>
-					<div className='flex mb-2 justify-end'>
-						{isConfirmingDelete ? (
-							<>
-								<div className='mt-auto border rounded-md cursor-pointer  mx-2'>
-									<KeyboardReturnIcon className='' onClick={onCancelDelete} />
-								</div>
-								<div className='mt-auto border rounded-md cursor-pointer bg-red-800'>
-									<DeleteIcon className='' onClick={onConfirmDelete} />
-								</div>
-							</>
-						) : (
-							<>
-								<div className='mx-2 w-6'></div>
-								<div className='mt-auto border rounded-md cursor-pointer'>
-									<DeleteIcon className='' onClick={onClickDelete} />
-								</div>
-							</>
-						)}
+				{comment.user.id === dummyUserId && (
+					<div className='ml-2'>
+						<div className='flex mb-2 justify-end'>
+							{isConfirmingDelete ? (
+								<>
+									<div className='mt-auto border rounded-md cursor-pointer  mx-2'>
+										<KeyboardReturnIcon className='' onClick={onCancelDelete} />
+									</div>
+									<div className='mt-auto border rounded-md cursor-pointer bg-red-800'>
+										<DeleteIcon className='' onClick={onConfirmDelete} />
+									</div>
+								</>
+							) : (
+								<>
+									<div className='mx-2 w-6'></div>
+									<div className='mt-auto border rounded-md cursor-pointer'>
+										<DeleteIcon className='' onClick={onClickDelete} />
+									</div>
+								</>
+							)}
+						</div>
+						<div className='flex justify-end'>
+							{isEditingComment ? (
+								<>
+									<div className='mt-auto border rounded-md cursor-pointer mx-2'>
+										<CheckIcon className='' onClick={onCommitComment} />
+									</div>
+									<div className='mt-auto border rounded-md cursor-pointer'>
+										<CloseIcon className='' onClick={onRollbackComment} />
+									</div>
+								</>
+							) : (
+								<>
+									<div className='mx-2 w-6'></div>
+									<div className='mt-auto border rounded-md cursor-pointer'>
+										<EditIcon
+											className=''
+											onClick={() => onEditComment(comment.content)}
+										/>
+									</div>
+								</>
+							)}
+						</div>
 					</div>
-					<div className='flex justify-end'>
-						{isEditingComment ? (
-							<>
-								<div className='mt-auto border rounded-md cursor-pointer mx-2'>
-									<CheckIcon className='' onClick={onCommitComment} />
-								</div>
-								<div className='mt-auto border rounded-md cursor-pointer'>
-									<CloseIcon className='' onClick={onRollbackComment} />
-								</div>
-							</>
-						) : (
-							<>
-								<div className='mx-2 w-6'></div>
-								<div className='mt-auto border rounded-md cursor-pointer'>
-									<EditIcon
-										className=''
-										onClick={() => onEditComment(comment.content)}
-									/>
-								</div>
-							</>
-						)}
-					</div>
-				</div>
+				)}
 			</div>
 		</div>
 	);

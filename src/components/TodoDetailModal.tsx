@@ -20,10 +20,12 @@ import { getColor } from '../common/util/get-color';
 import { AppDispatch } from '../stores/store';
 import {
 	Todo,
+	addComment,
 	addLike,
 	addTag,
 	deleteLike,
 	deleteTag,
+	setCurrentTodo,
 	updateDescription,
 	updateDueDate,
 	updateEndDate,
@@ -124,6 +126,22 @@ const TodoDetailModal = (props: {
 		} else {
 			dispatch(addLike(id, status, dummyUserId));
 		}
+	};
+
+	const [isAddingComment, setIsAddingComment] = useState(false);
+	const [addedComment, setAddedComment] = useState('');
+	const onAddComment = () => {
+		setIsAddingComment(true);
+	};
+	const onConfirmAddComment = async () => {
+		await dispatch(addComment(id, status, addedComment, dummyUserId));
+		await dispatch(setCurrentTodo(id));
+		setIsAddingComment(false);
+		setAddedComment('');
+	};
+	const onCancelAddComment = () => {
+		setIsAddingComment(false);
+		setAddedComment('');
 	};
 
 	return (
@@ -383,20 +401,67 @@ const TodoDetailModal = (props: {
 						/>
 					</div>
 				</div>
+				{comments.length !== 0 ? (
+					<div className='mt-10 flex gap-y-2 flex-col'>
+						{[...comments]
+							.sort((a, b) => {
+								if (a.createdAt > b.createdAt) return 1;
+								else if (a.createdAt < b.createdAt) return -1;
+								else return 0;
+							})
+							.map((comment) => (
+								<>
+									<Comment comment={comment} />
+								</>
+							))}
+					</div>
+				) : (
+					<div className='mt-10 flex text-xs justify-center'>
+						<div>Be the first to post a comment!</div>
+					</div>
+				)}
+				{!isAddingComment ? (
+					<div className='border rounded-md cursor-pointer mt-2 w-[26px]'>
+						<AddIcon className='' onClick={onAddComment} />
+					</div>
+				) : (
+					<div className='bg-gray-600 p-2 rounded-md mt-2'>
+						<div className='flex'>
+							<div className='w-[95%] min-w-0'>
+								<TextField
+									label='comment'
+									multiline
+									value={addedComment}
+									onChange={(e) => {
+										console.log(e);
+										setAddedComment(e.target.value);
+									}}
+									className='mt-1'
+									fullWidth
+									inputProps={{
+										style: {
+											color: 'white',
+											fontSize: '16px',
+											// single quote required to make it work
+											fontFamily: "'M PLUS Rounded 1c'",
+										},
+									}}
+								/>
+							</div>
 
-				<div className='mt-10 flex gap-y-2 flex-col'>
-					{[...comments]
-						.sort((a, b) => {
-							if (a.createdAt > b.createdAt) return 1;
-							else if (a.createdAt < b.createdAt) return -1;
-							else return 0;
-						})
-						.map((comment) => (
-							<>
-								<Comment comment={comment} />
-							</>
-						))}
-				</div>
+							<div className='ml-2'>
+								<div className='flex justify-end'>
+									<div className='mt-auto border rounded-md cursor-pointer'>
+										<CheckIcon className='' onClick={onConfirmAddComment} />
+									</div>
+									<div className='mt-auto border rounded-md cursor-pointer mx-2'>
+										<CloseIcon className='' onClick={onCancelAddComment} />
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				)}
 			</div>
 		</Modal>
 	);

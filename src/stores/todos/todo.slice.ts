@@ -37,7 +37,7 @@ export interface TodoDetail {
 
 export interface Comment {
 	id: number;
-	user: { name: string; picture: string };
+	user: { name: string; picture: string; id: number };
 	content: string;
 	createdAt: string;
 }
@@ -257,11 +257,11 @@ const todoSlice = createSlice({
 		},
 		addComment(state, action) {
 			console.log('action addComment');
-			const { todoId, status } = action.payload;
-			const todo = state.myTodos[status as Status].find(
-				({ id }) => id === todoId
-			);
-			if (!todo) return;
+			// const { todoId, status, content, created } = action.payload;
+			// const todo = state.myTodos[status as Status].find(
+			// 	({ id }) => id === todoId
+			// );
+			// if (!todo) return;
 			// todo.comments = [...todo.comments]((id) => id !== commentId);
 			// if (!state.myCurrentTodo) return;
 
@@ -269,12 +269,6 @@ const todoSlice = createSlice({
 			// 	(id) => id !== commentId
 			// );
 		},
-		// [...comments]
-		// 				.sort((a, b) => {
-		// 					if (a.createdAt > b.createdAt) return 1;
-		// 					else if (a.createdAt < b.createdAt) return -1;
-		// 					else return 0;
-		// 				})
 	},
 });
 
@@ -516,6 +510,20 @@ export function deleteComment(
 				commentId,
 			},
 		});
+	};
+}
+
+export function addComment(
+	todoId: number,
+	status: Status,
+	content: string,
+	userId: number
+) {
+	return async (dispatch: Dispatch) => {
+		console.log('addComment thunk');
+		const now = new Date();
+		const todoRepository = container.resolve<ITodoRepository>('TodoRepository');
+		await todoRepository.addComment(todoId, content, now, userId);
 	};
 }
 

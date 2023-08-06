@@ -1,5 +1,4 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { dummyUserId } from '../../dummy-data';
 import { ITodoRepository } from '../todo.repository.interface';
 import { supabase } from './supabase';
 
@@ -18,7 +17,7 @@ export class TodoRepository implements ITodoRepository {
 				`
 			*,
 			tags ( id, name ),
-			comments ( id, content, user: user_id (name, picture), created_at ),
+			comments ( id, content, user: user_id (name, picture, id), created_at ),
 			likes ( user_id ),
 			user: user_id ( name, picture )
 			`
@@ -179,7 +178,7 @@ export class TodoRepository implements ITodoRepository {
 			.from('comments')
 			.update({ content })
 			.eq('id', commentId);
-		if (error) throw new Error('failed to comment progress');
+		if (error) throw new Error('failed to update comment');
 	}
 
 	async deleteComment(commentId: number) {
@@ -187,15 +186,21 @@ export class TodoRepository implements ITodoRepository {
 			.from('comments')
 			.delete()
 			.eq('id', commentId);
-		if (error) throw new Error('failed to comment progress');
+		if (error) throw new Error('failed to delete comment');
 	}
 
-	async addComment(commentId: number, content: string) {
-		const now = new Date();
-		const { error } = await supabase
-			.from('comments')
-			.insert({ content, created_at: now, created_by: dummyUserId })
-			.eq('id', commentId);
-		if (error) throw new Error('failed to comment progress');
+	async addComment(
+		todoId: number,
+		content: string,
+		createdAt: Date,
+		userId: number
+	) {
+		const { error } = await supabase.from('comments').insert({
+			todo_id: todoId,
+			content,
+			created_at: createdAt,
+			user_id: userId,
+		});
+		if (error) throw new Error('failed to add comment');
 	}
 }
