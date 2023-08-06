@@ -221,13 +221,60 @@ const todoSlice = createSlice({
 		updateProgress(state, action) {
 			console.log('action updateProgress');
 			const { todoId, status, progress } = action.payload;
-			const todoIndex = state.myTodos[status as Status].findIndex(
+			const todo = state.myTodos[status as Status].find(
 				({ id }) => id === todoId
 			);
-			state.myTodos[status as Status][todoIndex].progress = progress;
+
+			if (!todo) return;
+			todo.progress = progress;
 			if (!state.myCurrentTodo) return;
 			state.myCurrentTodo.progress = progress;
 		},
+
+		updateComment(state, action) {
+			console.log('action updateComment');
+			const { commentId, content } = action.payload;
+			if (!state.myCurrentTodo) return;
+			const comment = state.myCurrentTodo.comments.find(
+				({ id }) => id === commentId
+			);
+			if (!comment) return;
+			comment.content = content;
+		},
+		deleteComment(state, action) {
+			console.log('action deleteComment');
+			const { todoId, status, commentId } = action.payload;
+			const todo = state.myTodos[status as Status].find(
+				({ id }) => id === todoId
+			);
+			if (!todo) return;
+			todo.comments = todo.comments.filter((id) => id !== commentId);
+			if (!state.myCurrentTodo) return;
+			console.log('action deleteComment detail');
+			state.myCurrentTodo.comments = state.myCurrentTodo.comments.filter(
+				(id) => id !== commentId
+			);
+		},
+		addComment(state, action) {
+			console.log('action addComment');
+			const { todoId, status } = action.payload;
+			const todo = state.myTodos[status as Status].find(
+				({ id }) => id === todoId
+			);
+			if (!todo) return;
+			// todo.comments = [...todo.comments]((id) => id !== commentId);
+			// if (!state.myCurrentTodo) return;
+
+			// state.myCurrentTodo.comments = state.myCurrentTodo.comments.filter(
+			// 	(id) => id !== commentId
+			// );
+		},
+		// [...comments]
+		// 				.sort((a, b) => {
+		// 					if (a.createdAt > b.createdAt) return 1;
+		// 					else if (a.createdAt < b.createdAt) return -1;
+		// 					else return 0;
+		// 				})
 	},
 });
 
@@ -430,6 +477,43 @@ export function updateProgress(
 				todoId,
 				status,
 				progress,
+			},
+		});
+	};
+}
+
+export function updateComment(commentId: number, content: string) {
+	return async (dispatch: Dispatch) => {
+		console.log('updateComment thunk');
+
+		const todoRepository = container.resolve<ITodoRepository>('TodoRepository');
+		await todoRepository.updateComment(commentId, content);
+		dispatch({
+			type: 'todo/updateComment',
+			payload: {
+				commentId,
+				content,
+			},
+		});
+	};
+}
+
+export function deleteComment(
+	todoId: number,
+	status: Status,
+	commentId: number
+) {
+	return async (dispatch: Dispatch) => {
+		console.log('deleteComment thunk');
+
+		const todoRepository = container.resolve<ITodoRepository>('TodoRepository');
+		await todoRepository.deleteComment(commentId);
+		dispatch({
+			type: 'todo/deleteComment',
+			payload: {
+				todoId,
+				status,
+				commentId,
 			},
 		});
 	};

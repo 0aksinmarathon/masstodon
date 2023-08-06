@@ -10,7 +10,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { TextField } from '@mui/material';
 import Modal from '@mui/material/Modal';
 import Slider from '@mui/material/Slider';
-import { format, parseISO } from 'date-fns';
+import { parseISO } from 'date-fns';
 import { Circle } from 'rc-progress';
 import { useState } from 'react';
 import DatePicker from 'react-datepicker';
@@ -37,6 +37,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { blueGrey, pink } from '@mui/material/colors';
 import { dummyUserId } from '../dummy-data';
+import Comment from './Comment';
 const TodoDetailModal = (props: {
 	todo: Todo;
 	open: any;
@@ -59,21 +60,11 @@ const TodoDetailModal = (props: {
 		open,
 		handleClose,
 	} = props;
-	console.log(comments);
-	comments.forEach((comment) => {
-		console.log(comment.createdAt);
-		console.log(comment.createdAt.slice(0, 12));
-		console.log(parseISO(comment.createdAt));
-		console.log(format(parseISO(comment.createdAt), 'yyyy/MM/dd HH:mm'));
-		console.log(comment.createdAt instanceof Date);
-		console.log(comment.createdAt instanceof String);
-	});
+
 	const dispatch = useDispatch<AppDispatch>();
 	const [isEditingTitle, setIsEditingTitle] = useState(false);
 	const [editedTitle, setEditedTitle] = useState('');
 	const [tmpProgress, setTmpProgress] = useState(progress);
-	console.log(progress);
-	console.log(tmpProgress);
 
 	const [isEditingDescription, setIsEditingDescription] = useState(false);
 	const [editedDescription, setEditedDescription] = useState('');
@@ -401,21 +392,9 @@ const TodoDetailModal = (props: {
 							else return 0;
 						})
 						.map((comment) => (
-							<div className='bg-gray-600 p-2 rounded-md'>
-								<div className='flex items-center '>
-									<img
-										src={comment.user.picture}
-										className='w-6 h-6 rounded-full mr-2'
-									/>
-									<div className='font-bold text-sm'>
-										{comment.user.name}{' '}
-										<span className='font-thin'>commented on</span>{' '}
-										{format(parseISO(comment.createdAt), 'yyyy/MM/dd HH:mm')}
-									</div>
-								</div>
-								<hr className='w-80 border-2 mt-2 border-dotted' />
-								<div className='mt-2 px-4'>{comment.content}</div>
-							</div>
+							<>
+								<Comment comment={comment} />
+							</>
 						))}
 				</div>
 			</div>

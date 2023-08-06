@@ -1,4 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js';
+import { dummyUserId } from '../../dummy-data';
 import { ITodoRepository } from '../todo.repository.interface';
 import { supabase } from './supabase';
 
@@ -99,18 +100,6 @@ export class TodoRepository implements ITodoRepository {
 		const {} = await fetch(``);
 	}
 
-	async addComment() {
-		const {} = await fetch(``);
-	}
-
-	async updateComment() {
-		const {} = await fetch(``);
-	}
-
-	async deleteComment() {
-		const {} = await fetch(``);
-	}
-
 	async updateTitle(todoId: number, title: string) {
 		console.log('updateTitle');
 		const { error } = await supabase
@@ -183,5 +172,30 @@ export class TodoRepository implements ITodoRepository {
 			.update({ progress })
 			.eq('id', todoId);
 		if (error) throw new Error('failed to update progress');
+	}
+
+	async updateComment(commentId: number, content: number) {
+		const { error } = await supabase
+			.from('comments')
+			.update({ content })
+			.eq('id', commentId);
+		if (error) throw new Error('failed to comment progress');
+	}
+
+	async deleteComment(commentId: number) {
+		const { error } = await supabase
+			.from('comments')
+			.delete()
+			.eq('id', commentId);
+		if (error) throw new Error('failed to comment progress');
+	}
+
+	async addComment(commentId: number, content: string) {
+		const now = new Date();
+		const { error } = await supabase
+			.from('comments')
+			.insert({ content, created_at: now, created_by: dummyUserId })
+			.eq('id', commentId);
+		if (error) throw new Error('failed to comment progress');
 	}
 }
