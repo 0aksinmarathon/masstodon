@@ -80,8 +80,10 @@ const todoSlice = createSlice({
 			console.log(state.myTodos);
 		},
 		setCurrentTodo(state, action) {
-			state.myCurrentTodo = action.payload;
+			console.log('setCurrentTodo');
 			console.log(action.payload);
+			state.myCurrentTodo = action.payload;
+			console.log(state.myCurrentTodo);
 		},
 		exchangeTodos(state, action) {
 			const { source, destination } = action.payload as DropResult;
@@ -205,6 +207,7 @@ const todoSlice = createSlice({
 		deleteLike(state, action) {
 			console.log('action deleteLike');
 			const { todoId, status, userId } = action.payload;
+			console.log(userId);
 			const todoIndex = state.myTodos[status as Status].findIndex(
 				({ id }) => id === todoId
 			);

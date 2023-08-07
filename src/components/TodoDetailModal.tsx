@@ -12,7 +12,7 @@ import Modal from '@mui/material/Modal';
 import Slider from '@mui/material/Slider';
 import { parseISO } from 'date-fns';
 import { Circle } from 'rc-progress';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useDispatch } from 'react-redux';
@@ -62,11 +62,24 @@ const TodoDetailModal = (props: {
 		open,
 		handleClose,
 	} = props;
+	console.log('todoDetailModal');
 
 	const dispatch = useDispatch<AppDispatch>();
 	const [isEditingTitle, setIsEditingTitle] = useState(false);
 	const [editedTitle, setEditedTitle] = useState('');
 	const [tmpProgress, setTmpProgress] = useState(progress);
+	useEffect(() => {
+		console.log('todoDetailModal useEffect');
+		setTmpProgress(progress);
+		setIsEditingTitle(false);
+		setEditedTitle('');
+		setIsEditingDescription(false);
+		setEditedDescription('');
+		setIsAddingTag(false);
+		setAddedTag('');
+		setIsAddingComment(false);
+		setAddedComment('');
+	}, [props.todo]);
 
 	const [isEditingDescription, setIsEditingDescription] = useState(false);
 	const [editedDescription, setEditedDescription] = useState('');

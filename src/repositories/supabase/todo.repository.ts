@@ -70,7 +70,9 @@ export class TodoRepository implements ITodoRepository {
 				endDate: todo.end_date,
 				dueDate: todo.due_date,
 				likes: todo.likes.map((like) => {
-					userId: like.user_id;
+					return {
+						userId: like.user_id,
+					};
 				}),
 			};
 		});
