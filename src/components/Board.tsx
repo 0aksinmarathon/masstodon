@@ -6,10 +6,11 @@ import {
 	Droppable,
 } from 'react-beautiful-dnd';
 import { useDispatch, useSelector } from 'react-redux';
-import { dummyData } from '../dummy-data';
+import { dummyData, dummyUserId } from '../dummy-data';
 import { AppDispatch, RootState } from '../stores/store';
 import {
 	Status,
+	Todo,
 	exchangeTodos,
 	setCurrentTodo,
 	setMyTodos,
@@ -50,9 +51,65 @@ const Board = () => {
 		setIsDetailModalOpen(true);
 	};
 
+	const [mode, setMode] = useState('yours');
+	const filterTodos = (todos: Todo[]): Todo[] => {
+		if (mode === 'yours') {
+			todos = todos.filter(({ userId }) => userId === dummyUserId);
+		} else {
+			todos = todos.filter(({ userId }) => userId !== dummyUserId);
+		}
+		if (titleFilter) {
+			todos = todos.filter(({ title }) => title.includes(titleFilter));
+		}
+		if (idFilter) {
+			todos = todos.filter(({ id }) => String(id).includes(idFilter));
+		}
+		if (userNameFilter) {
+			todos = todos.filter(({ user: { name } }) =>
+				String(name).includes(userNameFilter)
+			);
+		}
+
+		return todos;
+	};
+	console.log(myTodos);
+	const [titleFilter, setTitleFilter] = useState('');
+	const [idFilter, setIdFilter] = useState('');
+	const [userNameFilter, setUserNameFilter] = useState('');
+
 	return (
 		<div>
-			<div className='bg-slate-700 py-2 px-20'>adsvcasva;sjdfvhkadfs</div>
+			<div className='bg-slate-700 py-2 px-10 flex gap-x-10 font-bold'>
+				<div
+					className={`${mode === 'yours' ? 'border-b-4' : ''} cursor-pointer`}
+					onClick={() => setMode('yours')}
+				>
+					Yours
+				</div>
+				<div
+					className={`${mode === 'public' ? 'border-b-4' : ''} cursor-pointer`}
+					onClick={() => setMode('public')}
+				>
+					Public
+				</div>
+			</div>
+			<div className='bg-slate-600 py-2 px-10 flex font-bold font-thin text-sm'>
+				<div className='mr-4'>Title: </div>
+				<input
+					className='mr-10 text-gray-600 px-1'
+					onChange={(e) => setTitleFilter(e.target.value)}
+				></input>
+				<div className='mr-4'>ID: </div>
+				<input
+					className='mr-10 text-gray-600 px-1'
+					onChange={(e) => setIdFilter(e.target.value)}
+				></input>
+				<div className='mr-4'>User Name: </div>
+				<input
+					className='mr-10 text-gray-600 px-1'
+					onChange={(e) => setUserNameFilter(e.target.value)}
+				></input>
+			</div>
 			<div>
 				<DragDropContext onDragEnd={onDragEnd}>
 					{currentTodoDetail ? (
@@ -77,34 +134,38 @@ const Board = () => {
 												{column.title}
 											</div>
 											<div className='flex flex-col gap-y-4'>
-												{myTodos[column.id as Status].map((todo, index) => {
-													console.log(12321);
-													return (
-														<Draggable
-															draggableId={String(todo.id)}
-															index={index}
-															key={String(todo.id)}
-														>
-															{(provided2, snapshot) => (
-																<div
-																	ref={provided2.innerRef}
-																	{...provided2.draggableProps}
-																	{...provided2.dragHandleProps}
-																	style={{
-																		...provided2.draggableProps.style,
-																		opacity: snapshot.isDragging ? '0.3' : '1',
-																	}}
-																	className='grid !static'
-																	onClick={() => {
-																		onClickCard(todo.id);
-																	}}
-																>
-																	<Card todo={todo} />
-																</div>
-															)}
-														</Draggable>
-													);
-												})}
+												{filterTodos(myTodos[column.id as Status]).map(
+													(todo, index) => {
+														return (
+															<Draggable
+																isDragDisabled={mode === 'public'}
+																draggableId={String(todo.id)}
+																index={index}
+																key={String(todo.id)}
+															>
+																{(provided2, snapshot) => (
+																	<div
+																		ref={provided2.innerRef}
+																		{...provided2.draggableProps}
+																		{...provided2.dragHandleProps}
+																		style={{
+																			...provided2.draggableProps.style,
+																			opacity: snapshot.isDragging
+																				? '0.3'
+																				: '1',
+																		}}
+																		className='grid !static'
+																		onClick={() => {
+																			onClickCard(todo.id);
+																		}}
+																	>
+																		<Card todo={todo} />
+																	</div>
+																)}
+															</Draggable>
+														);
+													}
+												)}
 											</div>
 										</div>
 									)}

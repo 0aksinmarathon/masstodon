@@ -19,6 +19,7 @@ export interface Todo {
 	comments: Comment[];
 	likes: Like[];
 	user: User;
+	userId: number;
 }
 export interface TodoDetail {
 	id: string;
@@ -32,7 +33,8 @@ export interface TodoDetail {
 	sortKey: number;
 	tags: Tag[];
 	comments: Comment[];
-	user: User[];
+	user: User;
+	userId: number;
 }
 
 export interface Comment {

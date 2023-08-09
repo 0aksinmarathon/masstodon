@@ -28,6 +28,7 @@ export class TodoRepository implements ITodoRepository {
 		return data.map((todo) => {
 			return {
 				...todo,
+				userId: todo.user_id,
 				startDate: todo.start_date,
 				endDate: todo.end_date,
 				dueDate: todo.due_date,
@@ -66,6 +67,7 @@ export class TodoRepository implements ITodoRepository {
 		const processedData = data.map((todo) => {
 			return {
 				...todo,
+				userId: todo.user_id,
 				startDate: todo.start_date,
 				endDate: todo.end_date,
 				dueDate: todo.due_date,
