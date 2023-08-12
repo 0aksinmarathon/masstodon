@@ -18,4 +18,5 @@ export interface ITodoRepository {
 	addLike;
 	deleteLike;
 	updateProgress;
+	updateStatusToArchive;
 }

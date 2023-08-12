@@ -207,4 +207,13 @@ export class TodoRepository implements ITodoRepository {
 		});
 		if (error) throw new Error('failed to add comment');
 	}
+	async updateStatusToArchive(todoId: number) {
+		const { error } = await supabase
+			.from('todos')
+			.update({
+				status: 'archived',
+			})
+			.eq('id', todoId);
+		if (error) throw new Error('failed to add comment');
+	}
 }

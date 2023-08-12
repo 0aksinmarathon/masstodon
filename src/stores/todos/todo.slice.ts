@@ -274,6 +274,17 @@ const todoSlice = createSlice({
 			// 	(id) => id !== commentId
 			// );
 		},
+		updateStatusToArchive(state, action) {
+			console.log('action updateStatus');
+			const { todoId, status } = action.payload;
+			const todoIndex = state.myTodos[status as Status].findIndex(
+				({ id }) => id === todoId
+			);
+			if (todoIndex === -1) return;
+			state.myTodos[status as Status].splice(todoIndex, 1);
+			if (!state.myCurrentTodo) return;
+			state.myCurrentTodo = null;
+		},
 	},
 });
 
@@ -529,6 +540,21 @@ export function addComment(
 		const now = new Date();
 		const todoRepository = container.resolve<ITodoRepository>('TodoRepository');
 		await todoRepository.addComment(todoId, content, now, userId);
+	};
+}
+
+export function updateStatusToArchive(todoId: number, status: Status) {
+	return async (dispatch: Dispatch) => {
+		console.log('updateStatusToArchive thunk');
+		const todoRepository = container.resolve<ITodoRepository>('TodoRepository');
+		await todoRepository.updateStatusToArchive(todoId);
+		dispatch({
+			type: 'todo/updateStatusToArchive',
+			payload: {
+				todoId,
+				status,
+			},
+		});
 	};
 }
 

@@ -31,6 +31,7 @@ import {
 	updateEndDate,
 	updateProgress,
 	updateStartDate,
+	updateStatusToArchive,
 	updateTitle,
 } from '../stores/todos/todo.slice';
 import './TodoDetailModal.scss';
@@ -58,6 +59,7 @@ const TodoDetailModal = (props: {
 			endDate,
 			dueDate,
 			likes,
+			userId,
 		},
 		open,
 		handleClose,
@@ -157,6 +159,10 @@ const TodoDetailModal = (props: {
 		setAddedComment('');
 	};
 
+	const onClickSendToArchive = () => {
+		dispatch(updateStatusToArchive(id, status));
+	};
+
 	return (
 		<Modal open={open} onClose={handleClose}>
 			<div className='w-[800px] h-[400px] bg-gray-500 rounded-xl fixed inset-0 m-auto overflow-y-auto py-5 pl-5 pr-10 drop-shadow-hard2'>
@@ -192,7 +198,16 @@ const TodoDetailModal = (props: {
 						<div className='w-10 ml-2 flex justify-end'>{tmpProgress}%</div>
 					</div>
 				</div>
-				<div className='flex justify-between items-center mt-2'>
+				{status === 'finished' && userId === dummyUserId && (
+					<div
+						className='mt-1 cursor-pointer flex justify-end text-sky-200 '
+						onClick={onClickSendToArchive}
+					>
+						<span className='border-b border-sky-200'>Send To Archive</span>
+					</div>
+				)}
+
+				<div className='flex justify-between items-center mt-1'>
 					{!isEditingTitle ? (
 						<>
 							<div className='font-semibold break-words line-clamp-2 text-lg  mr-4'>
