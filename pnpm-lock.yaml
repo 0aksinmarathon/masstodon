@@ -20,6 +20,9 @@ dependencies:
   '@mui/styles':
     specifier: ^5.14.0
     version: 5.14.0(@types/react@17.0.2)(react@17.0.2)
+  '@mui/x-data-grid':
+    specifier: ^6.11.1
+    version: 6.11.1(@mui/material@5.14.0)(@mui/system@5.14.0)(react-dom@17.0.2)(react@17.0.2)
   '@ramonak/react-progress-bar':
     specifier: ^5.0.3
     version: 5.0.3(react-dom@17.0.2)(react@17.0.2)
@@ -83,6 +86,9 @@ dependencies:
   react-redux:
     specifier: ^8.1.1
     version: 8.1.1(@types/react-dom@17.0.2)(@types/react@17.0.2)(react-dom@17.0.2)(react@17.0.2)(redux@4.2.1)
+  react-router-dom:
+    specifier: ^6.15.0
+    version: 6.15.0(react-dom@17.0.2)(react@17.0.2)
   redux:
     specifier: ^4.2.1
     version: 4.2.1
@@ -821,6 +827,40 @@ packages:
       react-is: 18.2.0
     dev: false
 
+  /@mui/utils@5.14.4(react@17.0.2):
+    resolution: {integrity: sha512-4ANV0txPD3x0IcTCSEHKDWnsutg1K3m6Vz5IckkbLXVYu17oOZCVUdOKsb/txUmaCd0v0PmSRe5PW+Mlvns5dQ==}
+    engines: {node: '>=12.0.0'}
+    peerDependencies:
+      react: ^17.0.0 || ^18.0.0
+    dependencies:
+      '@babel/runtime': 7.22.6
+      '@types/prop-types': 15.7.5
+      '@types/react-is': 18.2.1
+      prop-types: 15.8.1
+      react: 17.0.2
+      react-is: 18.2.0
+    dev: false
+
+  /@mui/x-data-grid@6.11.1(@mui/material@5.14.0)(@mui/system@5.14.0)(react-dom@17.0.2)(react@17.0.2):
+    resolution: {integrity: sha512-qFyuf6R/JOG46Y62scwH0C7s+xVqfRFU/gv4rUWS9m+EYsabAXTx/g+Mq2t+ZGdaaGZlrpKDavr2PwitbpTMaw==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      '@mui/material': ^5.4.1
+      '@mui/system': ^5.4.1
+      react: ^17.0.0 || ^18.0.0
+      react-dom: ^17.0.0 || ^18.0.0
+    dependencies:
+      '@babel/runtime': 7.22.6
+      '@mui/material': 5.14.0(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(@types/react@17.0.2)(react-dom@17.0.2)(react@17.0.2)
+      '@mui/system': 5.14.0(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(@types/react@17.0.2)(react@17.0.2)
+      '@mui/utils': 5.14.4(react@17.0.2)
+      clsx: 2.0.0
+      prop-types: 15.8.1
+      react: 17.0.2
+      react-dom: 17.0.2(react@17.0.2)
+      reselect: 4.1.8
+    dev: false
+
   /@nodelib/fs.scandir@2.1.5:
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
     engines: {node: '>= 8'}
@@ -873,6 +913,11 @@ packages:
       redux: 4.2.1
       redux-thunk: 2.4.2(redux@4.2.1)
       reselect: 4.1.8
+    dev: false
+
+  /@remix-run/router@1.8.0:
+    resolution: {integrity: sha512-mrfKqIHnSZRyIzBcanNJmVQELTnX+qagEDlcKO90RgRBVOZGSGvZKeDihTRfWcqoDn5N/NkUcwWTccnpN18Tfg==}
+    engines: {node: '>=14.0.0'}
     dev: false
 
   /@supabase/functions-js@2.1.2:
@@ -1486,6 +1531,11 @@ packages:
 
   /clsx@1.2.1:
     resolution: {integrity: sha512-EcR6r5a8bj6pu3ycsa/E/cKVGuTgZJZdsyUYHOksG/UHIiKfjxzRxYJpyVBwYaQeOvghal9fcc4PidlgzugAQg==}
+    engines: {node: '>=6'}
+    dev: false
+
+  /clsx@2.0.0:
+    resolution: {integrity: sha512-rQ1+kcj+ttHG0MKVGBUXwayCCF1oh39BF5COIpRzuCEv8Mwjv0XucrI2ExNTOn9IlLifGClWQcU9BrZORvtw6Q==}
     engines: {node: '>=6'}
     dev: false
 
@@ -2739,6 +2789,29 @@ packages:
       react-is: 18.2.0
       redux: 4.2.1
       use-sync-external-store: 1.2.0(react@17.0.2)
+    dev: false
+
+  /react-router-dom@6.15.0(react-dom@17.0.2)(react@17.0.2):
+    resolution: {integrity: sha512-aR42t0fs7brintwBGAv2+mGlCtgtFQeOzK0BM1/OiqEzRejOZtpMZepvgkscpMUnKb8YO84G7s3LsHnnDNonbQ==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      react: '>=16.8'
+      react-dom: '>=16.8'
+    dependencies:
+      '@remix-run/router': 1.8.0
+      react: 17.0.2
+      react-dom: 17.0.2(react@17.0.2)
+      react-router: 6.15.0(react@17.0.2)
+    dev: false
+
+  /react-router@6.15.0(react@17.0.2):
+    resolution: {integrity: sha512-NIytlzvzLwJkCQj2HLefmeakxxWHWAP+02EGqWEZy+DgfHHKQMUoBBjUQLOtFInBMhWtb3hiUy6MfFgwLjXhqg==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      react: '>=16.8'
+    dependencies:
+      '@remix-run/router': 1.8.0
+      react: 17.0.2
     dev: false
 
   /react-transition-group@4.4.5(react-dom@17.0.2)(react@17.0.2):
