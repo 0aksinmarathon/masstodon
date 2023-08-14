@@ -78,7 +78,7 @@ const Board = () => {
 	const [userNameFilter, setUserNameFilter] = useState('');
 
 	return (
-		<div>
+		<div className='w-full '>
 			<div className='bg-slate-700 py-2 px-10 flex gap-x-10 font-bold'>
 				<div
 					className={`${mode === 'yours' ? 'border-b-4' : ''} cursor-pointer`}
@@ -93,7 +93,7 @@ const Board = () => {
 					Public
 				</div>
 			</div>
-			<div className='bg-slate-600 py-2 px-10 flex font-bold font-thin text-sm'>
+			<div className='bg-slate-600 py-2 px-10 flex font-thin text-sm'>
 				<div className='mr-4'>Title: </div>
 				<input
 					className='mr-10 text-gray-600 px-1'
