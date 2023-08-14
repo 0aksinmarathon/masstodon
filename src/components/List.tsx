@@ -221,7 +221,7 @@ const List = () => {
 							table.setPageSize(Number(e.target.value));
 						}}
 					>
-						{[20, 50, 100].map((pageSize) => (
+						{[20, 30, 50].map((pageSize) => (
 							<option key={pageSize} value={pageSize}>
 								Show {pageSize}
 							</option>
