@@ -15,21 +15,21 @@ function App() {
 	console.log('App');
 
 	return (
-		<div className='text-xl'>
-			<AuthProvider>
-				<Header />
-				<div className='flex'>
-					<BrowserRouter>
+		<BrowserRouter>
+			<div className='text-xl'>
+				<AuthProvider>
+					<Header />
+					<div className='flex'>
 						<SideBar />
 						<Routes>
 							<Route path='/' element={<Board />} />
 							<Route path='list' element={<List />} />
 							<Route path='*' element={<NotFound />} />
 						</Routes>
-					</BrowserRouter>
-				</div>
-			</AuthProvider>
-		</div>
+					</div>
+				</AuthProvider>
+			</div>
+		</BrowserRouter>
 	);
 }
 

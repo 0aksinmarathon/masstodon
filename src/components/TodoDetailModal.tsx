@@ -17,7 +17,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useDispatch } from 'react-redux';
 import { getColor } from '../common/util/get-color';
-import { AppDispatch } from '../stores/store';
+import { AppDispatch, RootState } from '../stores/store';
 import {
 	Todo,
 	addComment,
@@ -38,7 +38,8 @@ import './TodoDetailModal.scss';
 // import "../../assets/styles/date-picker.css";
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import { blueGrey, pink } from '@mui/material/colors';
+import { blueGrey, grey, pink } from '@mui/material/colors';
+import { useSelector } from 'react-redux';
 import { dummyUserId } from '../dummy-data';
 import Comment from './Comment';
 const TodoDetailModal = (props: {
@@ -65,6 +66,9 @@ const TodoDetailModal = (props: {
 		handleClose,
 	} = props;
 	console.log('todoDetailModal');
+
+	const user = useSelector((store: RootState) => store.auth.user);
+	const isMyTodo = user?.id === userId;
 
 	const dispatch = useDispatch<AppDispatch>();
 	const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -119,8 +123,8 @@ const TodoDetailModal = (props: {
 		setIsEditingDescription(false);
 	};
 
-	const onAddTitle = () => {
-		console.log('onAddTitle');
+	const onAddTag = () => {
+		console.log('onAddTag');
 		setAddedTag('');
 		setIsAddingTag(true);
 	};
@@ -136,10 +140,11 @@ const TodoDetailModal = (props: {
 	};
 
 	const onClickLikeButton = () => {
-		if (likes.find((like) => like.userId === dummyUserId)) {
-			dispatch(deleteLike(id, status, dummyUserId));
+		if (!user) return;
+		if (likes.find((like) => like.userId === user.id)) {
+			dispatch(deleteLike(id, status, user.id));
 		} else {
-			dispatch(addLike(id, status, dummyUserId));
+			dispatch(addLike(id, status, user.id));
 		}
 	};
 
@@ -149,7 +154,8 @@ const TodoDetailModal = (props: {
 		setIsAddingComment(true);
 	};
 	const onConfirmAddComment = async () => {
-		await dispatch(addComment(id, status, addedComment, dummyUserId));
+		if (!user) return;
+		await dispatch(addComment(id, status, addedComment, user.id));
 		await dispatch(setCurrentTodo(id));
 		setIsAddingComment(false);
 		setAddedComment('');
@@ -173,15 +179,21 @@ const TodoDetailModal = (props: {
 					<div className='flex items-center'>
 						<button
 							className='flex justify-center items-center mr-4 border rounded-lg px-2 bg-white text-gray-400 cursor-pointer drop-shadow-hard1'
-							onClick={onClickLikeButton}
+							onClick={user && onClickLikeButton}
 						>
-							<div className='mr-1'>
-								{likes.find((like) => like.userId === dummyUserId) ? (
+							{user ? (
+								<div className='mr-1'>
+									{likes.find((like) => like.userId === user.id) ? (
+										<FavoriteIcon style={{ fill: pink[200] }} />
+									) : (
+										<FavoriteBorderIcon />
+									)}
+								</div>
+							) : (
+								<div className='mr-1'>
 									<FavoriteIcon style={{ fill: pink[200] }} />
-								) : (
-									<FavoriteBorderIcon />
-								)}
-							</div>
+								</div>
+							)}
 							<div>{likes.length}</div>
 						</button>
 						<div className='w-[30px] opacity-75'>
@@ -213,10 +225,11 @@ const TodoDetailModal = (props: {
 							<div className='font-semibold break-words line-clamp-2 text-lg  mr-4'>
 								{title}
 							</div>
-
-							<div className='mt-auto border rounded-md cursor-pointer'>
-								<EditIcon className='' onClick={() => onEditTitle(title)} />
-							</div>
+							{isMyTodo && (
+								<div className='mt-auto border rounded-md cursor-pointer'>
+									<EditIcon className='' onClick={() => onEditTitle(title)} />
+								</div>
+							)}
 						</>
 					) : (
 						<>
@@ -256,12 +269,14 @@ const TodoDetailModal = (props: {
 							<div className='break-words line-clamp-5 text-sm mr-4'>
 								{description}
 							</div>
-							<div className='mt-auto border rounded-md cursor-pointer'>
-								<EditIcon
-									className=''
-									onClick={() => onEditDescription(description)}
-								/>
-							</div>
+							{isMyTodo && (
+								<div className='mt-auto border rounded-md cursor-pointer'>
+									<EditIcon
+										className=''
+										onClick={() => onEditDescription(description)}
+									/>
+								</div>
+							)}
 						</>
 					) : (
 						<>
@@ -306,16 +321,20 @@ const TodoDetailModal = (props: {
 												<div className='rounded-md px-2 bg-gray-800 text-xs h-5 pt-0.5 '>
 													{name}
 												</div>
-												<CancelIcon
-													className='cursor-pointer'
-													sx={{
-														width: '16px',
-														position: 'relative',
-														bottom: '12px',
-														right: '8px',
-													}}
-													onClick={() => dispatch(deleteTag(id, status, tagId))}
-												/>
+												{isMyTodo && (
+													<CancelIcon
+														className='cursor-pointer'
+														sx={{
+															width: '16px',
+															position: 'relative',
+															bottom: '12px',
+															right: '8px',
+														}}
+														onClick={() =>
+															dispatch(deleteTag(id, status, tagId))
+														}
+													/>
+												)}
 											</div>
 										</>
 									);
@@ -349,19 +368,23 @@ const TodoDetailModal = (props: {
 								/>
 							</div>
 						)}
-						{!isAddingTag ? (
-							<div className='mt-auto border rounded-md cursor-pointer'>
-								<AddIcon className='' onClick={onAddTitle} />
-							</div>
-						) : (
-							<div className='flex'>
-								<div className='mt-auto border rounded-md cursor-pointer mx-2'>
-									<CheckIcon className='' onClick={onCommitTag} />
-								</div>
-								<div className='mt-auto border rounded-md cursor-pointer'>
-									<CloseIcon className='' onClick={onRollbackTag} />
-								</div>
-							</div>
+						{isMyTodo && (
+							<>
+								{!isAddingTag ? (
+									<div className='mt-auto border rounded-md cursor-pointer'>
+										<AddIcon className='' onClick={onAddTag} />
+									</div>
+								) : (
+									<div className='flex'>
+										<div className='mt-auto border rounded-md cursor-pointer mx-2'>
+											<CheckIcon className='' onClick={onCommitTag} />
+										</div>
+										<div className='mt-auto border rounded-md cursor-pointer'>
+											<CloseIcon className='' onClick={onRollbackTag} />
+										</div>
+									</div>
+								)}
+							</>
 						)}
 					</div>
 				</div>
@@ -369,42 +392,53 @@ const TodoDetailModal = (props: {
 				<div className='px-4  rounded-b-md flex text-sm'>
 					<div className='w-2/4 border-r flex justify-center items-center py-1 gap-x-4'>
 						<PlayArrowIcon />{' '}
-						<DatePicker
-							selected={startDate ? parseISO(startDate) : null}
-							onChange={(e) => {
-								dispatch(updateStartDate(id, status, e));
-							}}
-							isClearable
-							dateFormat='yyyy/MM/dd'
-							placeholderText='Start Date'
-						/>
+						{isMyTodo ? (
+							<DatePicker
+								selected={startDate ? parseISO(startDate) : null}
+								onChange={(e) => {
+									dispatch(updateStartDate(id, status, e));
+								}}
+								isClearable
+								dateFormat='yyyy/MM/dd'
+								placeholderText='Start Date'
+							/>
+						) : (
+							<div>{startDate ? parseISO(startDate) : 'Not set'}</div>
+						)}
 					</div>
 					<div className='flex justify-center items-center py-1 w-2/4 gap-x-4'>
 						<DoneOutlineIcon />
-						<DatePicker
-							selected={endDate ? parseISO(endDate) : null}
-							onChange={(e) => {
-								dispatch(updateEndDate(id, status, e));
-							}}
-							isClearable
-							dateFormat='yyyy/MM/dd'
-							placeholderText='End Date'
-						/>
+						{isMyTodo ? (
+							<DatePicker
+								selected={endDate ? parseISO(endDate) : null}
+								onChange={(e) => {
+									dispatch(updateEndDate(id, status, e));
+								}}
+								isClearable
+								dateFormat='yyyy/MM/dd'
+								placeholderText='End Date'
+							/>
+						) : (
+							<div>{endDate ? parseISO(endDate) : 'Not set'}</div>
+						)}
 					</div>
 				</div>
 				<hr className='' />
 				<div className='flex justify-center items-center py-1 gap-x-4 text-sm'>
 					<AlarmOnIcon />
-
-					<DatePicker
-						selected={dueDate ? parseISO(dueDate) : null}
-						onChange={(e) => {
-							dispatch(updateDueDate(id, status, e));
-						}}
-						isClearable
-						dateFormat='yyyy/MM/dd'
-						placeholderText='Due Date'
-					/>
+					{isMyTodo ? (
+						<DatePicker
+							selected={dueDate ? parseISO(dueDate) : null}
+							onChange={(e) => {
+								dispatch(updateDueDate(id, status, e));
+							}}
+							isClearable
+							dateFormat='yyyy/MM/dd'
+							placeholderText='Due Date'
+						/>
+					) : (
+						<div>{dueDate ? parseISO(dueDate) : 'Not set'}</div>
+					)}
 				</div>
 				<hr className='' />
 
@@ -425,7 +459,8 @@ const TodoDetailModal = (props: {
 							onChangeCommitted={() => {
 								dispatch(updateProgress(id, status, tmpProgress));
 							}}
-							style={{ color: blueGrey[900] }}
+							style={{ color: isMyTodo ? blueGrey[900] : grey[700] }}
+							disabled={!isMyTodo}
 						/>
 					</div>
 				</div>
@@ -448,47 +483,51 @@ const TodoDetailModal = (props: {
 						<div>Be the first to post a comment!</div>
 					</div>
 				)}
-				{!isAddingComment ? (
-					<div className='border rounded-md cursor-pointer mt-2 w-[26px]'>
-						<AddIcon className='' onClick={onAddComment} />
-					</div>
-				) : (
-					<div className='bg-gray-600 p-2 rounded-md mt-2'>
-						<div className='flex'>
-							<div className='w-[95%] min-w-0'>
-								<TextField
-									label='comment'
-									multiline
-									value={addedComment}
-									onChange={(e) => {
-										console.log(e);
-										setAddedComment(e.target.value);
-									}}
-									className='mt-1'
-									fullWidth
-									inputProps={{
-										style: {
-											color: 'white',
-											fontSize: '16px',
-											// single quote required to make it work
-											fontFamily: "'M PLUS Rounded 1c'",
-										},
-									}}
-								/>
+				{user && (
+					<>
+						{!isAddingComment ? (
+							<div className='border rounded-md cursor-pointer mt-2 w-[26px]'>
+								<AddIcon className='' onClick={onAddComment} />
 							</div>
-
-							<div className='ml-2'>
-								<div className='flex justify-end'>
-									<div className='mt-auto border rounded-md cursor-pointer'>
-										<CheckIcon className='' onClick={onConfirmAddComment} />
+						) : (
+							<div className='bg-gray-600 p-2 rounded-md mt-2'>
+								<div className='flex'>
+									<div className='w-[95%] min-w-0'>
+										<TextField
+											label='comment'
+											multiline
+											value={addedComment}
+											onChange={(e) => {
+												console.log(e);
+												setAddedComment(e.target.value);
+											}}
+											className='mt-1'
+											fullWidth
+											inputProps={{
+												style: {
+													color: 'white',
+													fontSize: '16px',
+													// single quote required to make it work
+													fontFamily: "'M PLUS Rounded 1c'",
+												},
+											}}
+										/>
 									</div>
-									<div className='mt-auto border rounded-md cursor-pointer mx-2'>
-										<CloseIcon className='' onClick={onCancelAddComment} />
+
+									<div className='ml-2'>
+										<div className='flex justify-end'>
+											<div className='mt-auto border rounded-md cursor-pointer'>
+												<CheckIcon className='' onClick={onConfirmAddComment} />
+											</div>
+											<div className='mt-auto border rounded-md cursor-pointer mx-2'>
+												<CloseIcon className='' onClick={onCancelAddComment} />
+											</div>
+										</div>
 									</div>
 								</div>
 							</div>
-						</div>
-					</div>
+						)}
+					</>
 				)}
 			</div>
 		</Modal>

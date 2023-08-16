@@ -4,24 +4,30 @@ import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import ViewKanbanIcon from '@mui/icons-material/ViewKanban';
 import { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { RootState } from '../stores/store';
 const SideBar = () => {
 	const [isHidden, setIsHidden] = useState(false);
+	const user = useSelector((store: RootState) => store.auth.user);
 	const menu = [
 		{
 			icon: <HomeIcon />,
 			name: 'Home',
 			path: 'home',
+			loginRequired: true,
 		},
 		{
 			icon: <ViewKanbanIcon />,
 			name: 'Board',
 			path: '',
+			loginRequired: false,
 		},
 		{
 			icon: <ListAltIcon />,
 			name: 'List',
 			path: 'list',
+			loginRequired: true,
 		},
 	];
 	return (
@@ -48,10 +54,21 @@ const SideBar = () => {
 				</div>
 			)}
 			<div className='text-base gap-y-4 flex flex-col'>
-				{menu.map(({ icon, name, path }) => {
+				{menu.map(({ icon, name, path, loginRequired }) => {
 					return !isHidden ? (
-						<Link to={path} key={name}>
-							<div className='cursor-pointer'>
+						<Link
+							to={path}
+							key={name}
+							onClick={(e) => {
+								if (loginRequired && !user) {
+									e.preventDefault();
+								}
+							}}
+							className={`cursor-pointer ${
+								loginRequired && !user && 'opacity-50 cursor-default'
+							}`}
+						>
+							<div className=''>
 								{icon}
 								<span className='ml-2'>{name}</span>
 							</div>

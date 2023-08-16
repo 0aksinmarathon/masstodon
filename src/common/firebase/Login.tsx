@@ -11,7 +11,6 @@ export const Login = () => {
 	const dispatch = useDispatch<AppDispatch>();
 
 	const user = useSelector((store: RootState) => store.auth.user);
-	console.log(user);
 	// ログイン用関数
 	const onClickLogin = async () => {
 		try {

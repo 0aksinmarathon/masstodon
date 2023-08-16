@@ -50,8 +50,8 @@ const Board = () => {
 
 		setIsDetailModalOpen(true);
 	};
-
-	const [mode, setMode] = useState('yours');
+	const user = useSelector((store: RootState) => store.auth.user);
+	const [mode, setMode] = useState(user ? 'yours' : 'public');
 	const filterTodos = (todos: Todo[]): Todo[] => {
 		if (mode === 'yours') {
 			todos = todos.filter(({ userId }) => userId === dummyUserId);
@@ -72,7 +72,6 @@ const Board = () => {
 
 		return todos;
 	};
-	console.log(myTodos);
 	const [titleFilter, setTitleFilter] = useState('');
 	const [idFilter, setIdFilter] = useState('');
 	const [userNameFilter, setUserNameFilter] = useState('');
@@ -81,8 +80,10 @@ const Board = () => {
 		<div className='w-full '>
 			<div className='bg-slate-700 py-2 px-10 flex gap-x-10 font-bold'>
 				<div
-					className={`${mode === 'yours' ? 'border-b-4' : ''} cursor-pointer`}
-					onClick={() => setMode('yours')}
+					className={`cursor-pointer ${mode === 'yours' ? 'border-b-4' : ''} ${
+						!user && 'opacity-50 cursor-default'
+					} `}
+					onClick={() => user && setMode('yours')}
 				>
 					Yours
 				</div>
