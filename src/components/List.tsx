@@ -6,11 +6,12 @@ import {
 	useReactTable,
 } from '@tanstack/react-table';
 import { format, parseISO } from 'date-fns';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../stores/store';
-import { Todo, setMyTodos } from '../stores/todos/todo.slice';
+import { Todo, setCurrentTodo, setMyTodos } from '../stores/todos/todo.slice';
 import './List.scss';
+import TodoDetailModal from './TodoDetailModal';
 const List = () => {
 	const [width, setWidth] = useState(0);
 	const tableRef = useRef<HTMLTableElement | null>(null);
@@ -73,7 +74,7 @@ const List = () => {
 				cell: (props) => (
 					<div>
 						{props.getValue()
-							? format(parseISO(props.getValue()), 'yyyy/MM/dd HH:mm')
+							? format(parseISO(props.getValue()), 'yyyy/MM/dd')
 							: '-'}
 					</div>
 				),
@@ -88,7 +89,7 @@ const List = () => {
 				cell: (props) => (
 					<div>
 						{props.getValue()
-							? format(parseISO(props.getValue()), 'yyyy/MM/dd HH:mm')
+							? format(parseISO(props.getValue()), 'yyyy/MM/dd')
 							: '-'}
 					</div>
 				),
@@ -102,10 +103,18 @@ const List = () => {
 				cell: (props) => (
 					<div>
 						{props.getValue()
-							? format(parseISO(props.getValue()), 'yyyy/MM/dd HH:mm')
+							? format(parseISO(props.getValue()), 'yyyy/MM/dd')
 							: '-'}
 					</div>
 				),
+			},
+			{
+				header: 'Progress',
+				accessorKey: 'progress',
+				size: width * 0.03,
+				minSize: 20,
+				maxSize: Number.MAX_SAFE_INTEGER,
+				cell: (props) => <div>{props.getValue()}</div>,
 			},
 			{
 				header: 'Likes',
@@ -136,131 +145,158 @@ const List = () => {
 		// debugTable: true,
 		autoResetPageIndex: false,
 	});
+	const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+	const currentTodoDetail = useSelector((store: RootState) => {
+		console.log('selector', store.todo.myCurrentTodo);
+		return store.todo.myCurrentTodo;
+	});
 
+	const onClickRow = async (id: number) => {
+		await dispatch(setCurrentTodo(id));
+		console.log('onClickRow', currentTodoDetail);
+		if (!currentTodoDetail) return;
+
+		setIsDetailModalOpen(true);
+	};
 	return (
-		<div className='mt-5 mx-4 bg-gray-400 p-5 w-full h-fit rounded-lg drop-shadow-hard1'>
-			<div className='drop-shadow-hard1'>
-				<table className='bg-gray-600 w-full' ref={tableRef}>
-					<thead className='px-4'>
-						{table.getHeaderGroups().map((headerGroup) => (
-							<tr key={headerGroup.id} className=''>
-								{headerGroup.headers.map((header, index) => (
-									<>
-										<th
-											key={header.id}
-											style={{
-												width: `${header.getSize()}px`,
-											}}
-											className='p-2 h-3 text-sm font-semibold'
-										>
-											{header.isPlaceholder
-												? null
-												: flexRender(
-														header.column.columnDef.header,
-														header.getContext()
-												  )}
-											{index !== headerGroup.headers.length - 1 && (
-												<span className='flex items-center'>
-													<span
-														{...{
-															onMouseDown: header.getResizeHandler(),
-															onTouchStart: header.getResizeHandler(),
-															className: `resizer ${
-																header.column.getIsResizing()
-																	? 'isResizing'
-																	: ''
-															}`,
-														}}
-													></span>
-												</span>
-											)}
-										</th>
-									</>
-								))}
-							</tr>
-						))}
-					</thead>
-					<tbody>
-						{table.getRowModel().rows.map((row) => {
-							return (
-								<tr key={row.id}>
-									{row.getVisibleCells().map((cell) => {
-										return (
-											<td
-												key={cell.id}
+		<>
+			{currentTodoDetail ? (
+				<TodoDetailModal
+					open={isDetailModalOpen}
+					handleClose={() => setIsDetailModalOpen(false)}
+					todo={currentTodoDetail}
+				/>
+			) : null}
+			<div className='mt-5 mx-4 bg-gray-400 p-5 w-full h-fit rounded-lg drop-shadow-hard1'>
+				<div className='drop-shadow-hard1'>
+					<table className='bg-gray-600 w-full' ref={tableRef}>
+						<thead className='px-4'>
+							{table.getHeaderGroups().map((headerGroup) => (
+								<tr key={headerGroup.id}>
+									{headerGroup.headers.map((header, index) => (
+										<React.Fragment key={header.id}>
+											<th
+												// key={header.id}
 												style={{
-													width: cell.column.getSize(),
+													width: `${header.getSize()}px`,
 												}}
-												className='px-2 text-sm'
+												className='p-2 h-3 text-sm font-semibold'
 											>
-												{flexRender(
-													cell.column.columnDef.cell,
-													cell.getContext()
+												{header.isPlaceholder
+													? null
+													: flexRender(
+															header.column.columnDef.header,
+															header.getContext()
+													  )}
+												{index !== headerGroup.headers.length - 1 && (
+													<span className='flex items-center '>
+														<span
+															{...{
+																onMouseDown: header.getResizeHandler(),
+																onTouchStart: header.getResizeHandler(),
+																className: `resizer w-1 bg-gray-500 ${
+																	header.column.getIsResizing()
+																		? 'isResizing'
+																		: ''
+																}`,
+															}}
+														></span>
+													</span>
 												)}
-											</td>
-										);
-									})}
+											</th>
+										</React.Fragment>
+									))}
 								</tr>
-							);
-						})}
-					</tbody>
-				</table>
-				<div className='flex bg-gray-600 text-sm p-2 justify-end gap-x-4 border-t border-gray-300 items-center rounded-b-md'>
-					<div className='text-sm'>
-						<span>Page </span>
-						<strong>
-							{table.getState().pagination.pageIndex + 1} of{' '}
-							{table.getPageCount()}
-						</strong>
-					</div>
+							))}
+						</thead>
+						<tbody>
+							{table.getRowModel().rows.map((row) => {
+								return (
+									<tr
+										key={row.id}
+										onClick={() => {
+											onClickRow(row.original.id);
+										}}
+										className='cursor-pointer'
+									>
+										{row.getVisibleCells().map((cell) => {
+											return (
+												<td
+													key={cell.id}
+													style={{
+														width: cell.column.getSize(),
+													}}
+													className='px-2 text-sm'
+												>
+													{flexRender(
+														cell.column.columnDef.cell,
+														cell.getContext()
+													)}
+												</td>
+											);
+										})}
+									</tr>
+								);
+							})}
+						</tbody>
+					</table>
+					<div className='flex bg-gray-600 text-sm p-2 justify-end gap-x-4 border-t border-gray-300 items-center rounded-b-md'>
+						<div className='text-sm'>
+							<span>Page </span>
+							<strong>
+								{table.getState().pagination.pageIndex + 1} of{' '}
+								{table.getPageCount()}
+							</strong>
+						</div>
 
-					<select
-						className='bg-gray-600 cursor-pointer'
-						value={table.getState().pagination.pageSize}
-						onChange={(e) => {
-							table.setPageSize(Number(e.target.value));
-						}}
-					>
-						{[20, 30, 50].map((pageSize) => (
-							<option key={pageSize} value={pageSize}>
-								Show {pageSize}
-							</option>
-						))}
-					</select>
-					<div>{table.getRowModel().rows.length} Rows</div>
-					<div className='flex gap-x-4 items-center ml-4'>
-						<button
-							className='cursor-pointer'
-							onClick={() => table.setPageIndex(0)}
-							disabled={!table.getCanPreviousPage()}
+						<select
+							className='bg-gray-600 cursor-pointer'
+							value={table.getState().pagination.pageSize}
+							onChange={(e) => {
+								table.setPageSize(Number(e.target.value));
+							}}
 						>
-							{'<<'}
-						</button>
-						<button
-							className='cursor-pointer'
-							onClick={() => table.previousPage()}
-							disabled={!table.getCanPreviousPage()}
-						>
-							{'<'}
-						</button>
-						<button
-							className='cursor-pointer'
-							onClick={() => table.nextPage()}
-							disabled={!table.getCanNextPage()}
-						>
-							{'>'}
-						</button>
-						<button
-							className='cursor-pointer'
-							onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-							disabled={!table.getCanNextPage()}
-						>
-							{'>>'}
-						</button>
+							{[20, 30, 50].map((pageSize) => (
+								<option key={pageSize} value={pageSize}>
+									Show {pageSize}
+								</option>
+							))}
+						</select>
+						<div>{table.getRowModel().rows.length} Rows</div>
+						<div className='flex gap-x-4 items-center ml-4'>
+							<button
+								className='cursor-pointer'
+								onClick={() => table.setPageIndex(0)}
+								disabled={!table.getCanPreviousPage()}
+							>
+								{'<<'}
+							</button>
+							<button
+								className='cursor-pointer'
+								onClick={() => table.previousPage()}
+								disabled={!table.getCanPreviousPage()}
+							>
+								{'<'}
+							</button>
+							<button
+								className='cursor-pointer'
+								onClick={() => table.nextPage()}
+								disabled={!table.getCanNextPage()}
+							>
+								{'>'}
+							</button>
+							<button
+								className='cursor-pointer'
+								onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+								disabled={!table.getCanNextPage()}
+							>
+								{'>>'}
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
+		</>
 	);
 };
 

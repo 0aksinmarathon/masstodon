@@ -50,14 +50,14 @@ const SideBar = () => {
 			<div className='text-base gap-y-4 flex flex-col'>
 				{menu.map(({ icon, name, path }) => {
 					return !isHidden ? (
-						<Link to={path}>
+						<Link to={path} key={name}>
 							<div className='cursor-pointer'>
 								{icon}
 								<span className='ml-2'>{name}</span>
 							</div>
 						</Link>
 					) : (
-						<Link to={path}>
+						<Link to={path} key={name}>
 							<div className='cursor-pointer'>{icon}</div>
 						</Link>
 					);

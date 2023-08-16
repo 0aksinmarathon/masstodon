@@ -302,7 +302,7 @@ const TodoDetailModal = (props: {
 									console.log(isAddingTag);
 									return (
 										<>
-											<div className='flex items-center'>
+											<div className='flex items-center' key={tagId}>
 												<div className='rounded-md px-2 bg-gray-800 text-xs h-5 pt-0.5 '>
 													{name}
 												</div>
@@ -439,7 +439,7 @@ const TodoDetailModal = (props: {
 							})
 							.map((comment) => (
 								<>
-									<Comment comment={comment} />
+									<Comment comment={comment} key={comment.id} />
 								</>
 							))}
 					</div>

@@ -1,9 +1,9 @@
-import 'reflect-metadata';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
+import 'reflect-metadata';
 import App from './App.tsx';
 import './index.css';
-import { Provider } from 'react-redux';
 import store from './stores/store.ts';
 
 ReactDOM.render(
