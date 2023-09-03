@@ -8,10 +8,14 @@ import NotFound from './components/NotFound';
 import SideBar from './components/SideBar';
 import { AuthRepository } from './repositories/supabase/auth.repository';
 import { TodoRepository } from './repositories/supabase/todo.repository';
+import Home from './components/Home';
+import { UserRepository } from './repositories/supabase/user.repository';
+import Follow from './components/Follow';
 
 function App() {
 	container.register('TodoRepository', TodoRepository);
 	container.register('AuthRepository', AuthRepository);
+	container.register('UserRepository', UserRepository);
 	console.log('App');
 
 	return (
@@ -23,7 +27,13 @@ function App() {
 						<SideBar />
 						<Routes>
 							<Route path='/' element={<Board />} />
+							<Route path='/:userId' element={<Board />} />
 							<Route path='list' element={<List />} />
+							<Route path='list/:userId' element={<List />} />
+							<Route path='home' element={<Home />} />
+							<Route path='home/:userId' element={<Home />} />
+							<Route path='follow' element={<Follow />} />
+							<Route path='follow/:userId' element={<Follow />} />
 							<Route path='*' element={<NotFound />} />
 						</Routes>
 					</div>

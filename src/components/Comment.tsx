@@ -21,7 +21,7 @@ import './Comment.scss';
 
 const Comment = (props: { comment: Comment }) => {
 	const { comment } = props;
-	console.log(comment);
+	const user = useSelector((store: RootState) => store.auth.user);
 	const dispatch = useDispatch<AppDispatch>();
 	const currentTodoDetail = useSelector(
 		(store: RootState) => store.todo.myCurrentTodo
@@ -98,7 +98,7 @@ const Comment = (props: { comment: Comment }) => {
 						<div className='mt-2 px-4 break-words'>{comment.content}</div>
 					)}
 				</div>
-				{comment.user.id === dummyUserId && (
+				{comment.user.id === user?.id && (
 					<div className='ml-2'>
 						<div className='flex mb-2 justify-end'>
 							{isConfirmingDelete ? (

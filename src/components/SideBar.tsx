@@ -3,6 +3,7 @@ import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import ViewKanbanIcon from '@mui/icons-material/ViewKanban';
+import Diversity1Icon from '@mui/icons-material/Diversity1';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -29,15 +30,23 @@ const SideBar = () => {
 			path: 'list',
 			loginRequired: true,
 		},
+		{
+			icon: <Diversity1Icon />,
+			name: 'Follow',
+			path: 'follow',
+			loginRequired: true,
+		},
 	];
 	return (
 		<div
-			className={`h-screen min-w-[200px] bg-sky-950 drop-shadow-hard2 py-4 px-4 ${
-				!isHidden ? 'min-w-[200px]' : 'min-w-[60px]'
-			}`}
+			className={`h-screen min-w-[200px] bg-sky-950 drop-shadow-hard2 py-4 px-4 transition-all duration-300 
+			ease-out ${!isHidden ? 'min-w-[200px]' : 'min-w-[60px]'}`}
 		>
 			{!isHidden ? (
-				<div className='rounded-full bg-white w-5 h-5 flex items-center justify-center drop-shadow-hard2 absolute left-[188px] cursor-pointer'>
+				<div
+					className='rounded-full bg-white w-5 h-5 flex items-center justify-center drop-shadow-hard2 absolute left-[188px] cursor-pointer transition-all duration-300 
+                ease-out'
+				>
 					<KeyboardArrowLeftIcon
 						color='primary'
 						fontSize='small'
@@ -45,7 +54,10 @@ const SideBar = () => {
 					/>
 				</div>
 			) : (
-				<div className='rounded-full bg-white w-5 h-5 flex items-center justify-center drop-shadow-hard2 absolute left-[48px] cursor-pointer'>
+				<div
+					className='rounded-full bg-white w-5 h-5 flex items-center justify-center drop-shadow-hard2 absolute left-[48px] cursor-pointer transition-all duration-300 
+                ease-out'
+				>
 					<KeyboardArrowRightIcon
 						color='primary'
 						fontSize='small'
@@ -64,8 +76,10 @@ const SideBar = () => {
 									e.preventDefault();
 								}
 							}}
-							className={`cursor-pointer ${
-								loginRequired && !user && 'opacity-50 cursor-default'
+							className={`${
+								loginRequired && !user
+									? 'opacity-50 cursor-default'
+									: 'cursor-pointer'
 							}`}
 						>
 							<div className=''>
@@ -74,8 +88,29 @@ const SideBar = () => {
 							</div>
 						</Link>
 					) : (
-						<Link to={path} key={name}>
-							<div className='cursor-pointer'>{icon}</div>
+						<Link
+							to={path}
+							key={name}
+							onClick={(e) => {
+								if (loginRequired && !user) {
+									e.preventDefault();
+								}
+							}}
+							className={`${
+								loginRequired && !user
+									? 'opacity-50 cursor-default'
+									: 'cursor-pointer'
+							}`}
+						>
+							<div
+							// className={`${
+							// 	loginRequired && !user
+							// 		? 'opacity-50 cursor-default'
+							// 		: 'cursor-pointer'
+							// }`}
+							>
+								{icon}
+							</div>
 						</Link>
 					);
 				})}

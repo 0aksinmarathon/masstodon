@@ -1,17 +1,14 @@
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useDispatch, useSelector } from 'react-redux';
-// import { useNavigate } from 'react-router-dom';
 import { addUser, getUser } from '../../stores/auth/auth.slice';
 import { AppDispatch, RootState } from '../../stores/store';
 import { fireauth } from './firebase';
 
 export const Login = () => {
-	// const navigate = useNavigate();
 	const provider = new GoogleAuthProvider();
 	const dispatch = useDispatch<AppDispatch>();
 
 	const user = useSelector((store: RootState) => store.auth.user);
-	// ログイン用関数
 	const onClickLogin = async () => {
 		try {
 			await signInWithPopup(fireauth, provider).then(async (res) => {

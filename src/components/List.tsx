@@ -8,24 +8,33 @@ import {
 import { format, parseISO } from 'date-fns';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { getDisplayStatus, getStatusColor } from '../common/util/get-color';
 import { AppDispatch, RootState } from '../stores/store';
 import { Todo, setCurrentTodo, setMyTodos } from '../stores/todos/todo.slice';
 import './List.scss';
 import TodoDetailModal from './TodoDetailModal';
+import { useParams } from 'react-router-dom';
 const List = () => {
 	const [width, setWidth] = useState(0);
 	const tableRef = useRef<HTMLTableElement | null>(null);
 
 	const dispatch = useDispatch<AppDispatch>();
+	const { userId } = useParams();
+	const user = userId
+		? useSelector((store: RootState) => store.user.user)
+		: useSelector((store: RootState) => store.auth.user);
+	const authUser = useSelector((store: RootState) => store.auth.user);
 	useEffect(() => {
-		dispatch(setMyTodos());
-	}, []);
+		if (user) {
+			dispatch(setMyTodos(user.id));
+		}
+	}, [user]);
 	const myTodos = useSelector((store: RootState) => {
 		return [
 			...Object.values(store.todo.myTodos).flatMap((todos) => todos),
 		].sort((a, b) => {
-			if (a.startDate > b.startDate) return 1;
-			else if (a.startDate < b.startDate) return -1;
+			if (a.id < b.id) return 1;
+			else if (a.id > b.id) return -1;
 			else return 0;
 		});
 	});
@@ -44,6 +53,24 @@ const List = () => {
 				maxSize: Number.MAX_SAFE_INTEGER,
 				// cell: (props) => <div className='text-center'>{props.getValue()}</div>,
 				// style: { textAlign: 'center' },
+			},
+			{
+				header: 'Status',
+				accessorKey: 'status',
+				size: width * 0.15,
+				minSize: 150,
+				maxSize: Number.MAX_SAFE_INTEGER,
+				cell: (props) => (
+					<div className='flex justify-center'>
+						<div
+							className={`text-center px-1 w-fit rounded-xl ${getStatusColor(
+								props.getValue()
+							)}`}
+						>
+							{getDisplayStatus(props.getValue())}
+						</div>
+					</div>
+				),
 			},
 			{
 				header: 'Title',
@@ -179,6 +206,7 @@ const List = () => {
 												// key={header.id}
 												style={{
 													width: `${header.getSize()}px`,
+													minWidth: `${header.column.columnDef.minSize}px`,
 												}}
 												className='p-2 h-3 text-sm font-semibold'
 											>

@@ -8,6 +8,7 @@ import { Todo } from '../stores/todos/todo.slice';
 import './Card.scss';
 
 import { getColor } from '../common/util/get-color';
+import { Link } from 'react-router-dom';
 
 const Card = (props: { todo: Todo }) => {
 	const { id, title, description, progress, tags, comments, likes, user } =
@@ -36,14 +37,16 @@ const Card = (props: { todo: Todo }) => {
 					{title}
 				</div>
 				{isHidden ? (
-					<div className='font-semibold break-words line-clamp-2 text-xs flex items-center'>
-						<img
-							src={user.picture}
-							alt=''
-							className='w-5 h-5 mr-2 rounded-full'
-						/>
-						{user.name}
-					</div>
+					<Link to={'/home/' + user.id}>
+						<div className='font-semibold break-words line-clamp-2 text-xs flex items-center cursor-pointer'>
+							<img
+								src={user.picture}
+								alt=''
+								className='w-5 h-5 mr-2 rounded-full'
+							/>
+							{user.name}
+						</div>
+					</Link>
 				) : null}
 
 				<div
@@ -97,14 +100,16 @@ const Card = (props: { todo: Todo }) => {
 						</div>
 					</div>
 					<hr className='' />
-					<div className='font-semibold break-words line-clamp-2 text-xs flex items-center px-4 py-2'>
-						<img
-							src={user.picture}
-							alt=''
-							className='w-5 h-5 mr-2 rounded-full'
-						/>
-						{user.name}
-					</div>
+					<Link to={'/home/' + user.id}>
+						<div className='font-semibold break-words line-clamp-2 text-xs flex items-center px-4 py-2 cursor-pointer'>
+							<img
+								src={user.picture}
+								alt=''
+								className='w-5 h-5 mr-2 rounded-full'
+							/>
+							{user.name}
+						</div>
+					</Link>
 				</>
 			) : null}
 		</div>

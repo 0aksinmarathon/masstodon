@@ -1,6 +1,7 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { ITodoRepository } from '../todo.repository.interface';
 import { supabase } from './supabase';
+import { Status } from '../../stores/todos/todo.slice';
 
 // @injectable()
 export class TodoRepository implements ITodoRepository {
@@ -47,7 +48,7 @@ export class TodoRepository implements ITodoRepository {
 		});
 	}
 
-	async getMyTodoList() {
+	async getMyTodoList(userId: number) {
 		console.log('getMyTodoList');
 		const { data, error } = await this.supabase
 			.from('todos')
@@ -57,10 +58,12 @@ export class TodoRepository implements ITodoRepository {
 			tags ( id, name ),
 			comments ( id ),
 			likes ( user_id ),
-			user: user_id ( name, picture )
+			user: user_id ( id, name, picture )
 			`
 			)
-			.is('deleted_at', null);
+			.is('deleted_at', null)
+			.eq('user_id', userId);
+		console.log(userId);
 		console.log(data);
 		if (error) throw new Error('failed to get my todo list');
 		console.log(data);
@@ -84,6 +87,63 @@ export class TodoRepository implements ITodoRepository {
 				({ status }) => status === 'workInProgress'
 			),
 			finished: processedData?.filter(({ status }) => status === 'finished'),
+			archived: processedData?.filter(({ status }) => status === 'archived'),
+		};
+	}
+
+	async getPublicTodoList(userId: number) {
+		console.log('getPublicTodoList');
+		const { data, error } = userId
+			? await this.supabase
+					.from('todos')
+					.select(
+						`
+			*,
+			tags ( id, name ),
+			comments ( id ),
+			likes ( user_id ),
+			user: user_id ( id, name, picture )
+			`
+					)
+					.is('deleted_at', null)
+					.neq('user_id', userId)
+			: await this.supabase
+					.from('todos')
+					.select(
+						`
+			*,
+			tags ( id, name ),
+			comments ( id ),
+			likes ( user_id ),
+			user: user_id ( id, name, picture )
+			`
+					)
+					.is('deleted_at', null);
+
+		console.log(data);
+		if (error) throw new Error('failed to get my todo list');
+		console.log(data);
+		const processedData = data.map((todo) => {
+			return {
+				...todo,
+				userId: todo.user_id,
+				startDate: todo.start_date,
+				endDate: todo.end_date,
+				dueDate: todo.due_date,
+				likes: todo.likes.map((like) => {
+					return {
+						userId: like.user_id,
+					};
+				}),
+			};
+		});
+		return {
+			planning: processedData?.filter(({ status }) => status === 'planning'),
+			workInProgress: processedData?.filter(
+				({ status }) => status === 'workInProgress'
+			),
+			finished: processedData?.filter(({ status }) => status === 'finished'),
+			archived: processedData?.filter(({ status }) => status === 'archived'),
 		};
 	}
 
@@ -91,8 +151,28 @@ export class TodoRepository implements ITodoRepository {
 		const {} = await fetch(``);
 	}
 
-	async addTodo() {
-		const {} = await fetch(``);
+	async addTodo(
+		userId: number,
+		title: string,
+		description: string,
+		progress: number,
+		startDate: Date,
+		endDate: Date,
+		dueDate: Date,
+		status: Status
+	) {
+		const { error } = await supabase.from('todos').insert({
+			progress,
+			user_id: userId,
+			title,
+			description,
+			start_date: startDate,
+			end_date: endDate,
+			due_date: dueDate,
+			status,
+			sort_key: 100,
+		});
+		if (error) throw new Error('failed to add tag');
 	}
 
 	async deleteTodo() {

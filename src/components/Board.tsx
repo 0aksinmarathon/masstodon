@@ -1,3 +1,4 @@
+import AddIcon from '@mui/icons-material/Add';
 import { useEffect, useState } from 'react';
 import {
 	DragDropContext,
@@ -12,31 +13,40 @@ import {
 	Status,
 	Todo,
 	exchangeTodos,
+	getPublicTodos,
 	setCurrentTodo,
 	setMyTodos,
 } from '../stores/todos/todo.slice';
 import Card from './Card';
 import TodoDetailModal from './TodoDetailModal';
+import TodoAddModal from './TodoAddModal';
+import { useParams } from 'react-router-dom';
 
 const Board = () => {
+	const { userId } = useParams();
+	const user = userId
+		? useSelector((store: RootState) => store.user.user)
+		: useSelector((store: RootState) => store.auth.user);
 	const currentTodoDetail = useSelector((store: RootState) => {
 		console.log('selector', store.todo.myCurrentTodo);
 		return store.todo.myCurrentTodo;
 	});
 
-	const myTodos = useSelector((store: RootState) => {
-		console.log('selector', store.todo.myTodos);
-		return store.todo.myTodos;
-	});
-
 	const dispatch = useDispatch<AppDispatch>();
 	useEffect(() => {
-		// console.log(a);
-		dispatch(setMyTodos());
-	}, []);
+		console.log(authUser);
+		if (!authUser) {
+			dispatch(getPublicTodos());
+		}
+		if (user) {
+			dispatch(setMyTodos(user.id));
+			dispatch(getPublicTodos(user.id));
+		}
+	}, [user]);
 	const [data, setData] = useState(dummyData);
 
 	const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+	const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 	// const [currentTodoDetail, setCurrentTodoDetail] = useState<Todo | null>(null);
 
 	const onDragEnd = async (result: DropResult) => {
@@ -50,14 +60,24 @@ const Board = () => {
 
 		setIsDetailModalOpen(true);
 	};
-	const user = useSelector((store: RootState) => store.auth.user);
-	const [mode, setMode] = useState(user ? 'yours' : 'public');
+
+	const onClickAddTodo = async () => {
+		setIsAddModalOpen(true);
+	};
+	const authUser = useSelector((store: RootState) => store.auth.user);
+
+	const [mode, setMode] = useState(authUser || userId ? 'yours' : 'public');
+
+	const todos =
+		mode === 'yours'
+			? useSelector((store: RootState) => {
+					return store.todo.myTodos;
+			  })
+			: useSelector((store: RootState) => {
+					return store.todo.publicTodos;
+			  });
+
 	const filterTodos = (todos: Todo[]): Todo[] => {
-		if (mode === 'yours') {
-			todos = todos.filter(({ userId }) => userId === dummyUserId);
-		} else {
-			todos = todos.filter(({ userId }) => userId !== dummyUserId);
-		}
 		if (titleFilter) {
 			todos = todos.filter(({ title }) => title.includes(titleFilter));
 		}
@@ -80,16 +100,20 @@ const Board = () => {
 		<div className='w-full '>
 			<div className='bg-slate-700 py-2 px-10 flex gap-x-10 font-bold'>
 				<div
-					className={`cursor-pointer ${mode === 'yours' ? 'border-b-4' : ''} ${
-						!user && 'opacity-50 cursor-default'
+					className={` ${mode === 'yours' ? 'border-b-4' : ''} ${
+						!authUser && !userId
+							? 'opacity-50 cursor-default'
+							: 'cursor-pointer'
 					} `}
-					onClick={() => user && setMode('yours')}
+					onClick={() => authUser && setMode('yours')}
 				>
 					Yours
 				</div>
 				<div
-					className={`${mode === 'public' ? 'border-b-4' : ''} cursor-pointer`}
-					onClick={() => setMode('public')}
+					className={`${mode === 'public' ? 'border-b-4' : ''}  ${
+						userId ? 'opacity-50 cursor-default' : 'cursor-pointer'
+					}`}
+					onClick={() => !userId && setMode('public')}
 				>
 					Public
 				</div>
@@ -111,6 +135,12 @@ const Board = () => {
 					onChange={(e) => setUserNameFilter(e.target.value)}
 				></input>
 			</div>
+			{authUser && !userId && (
+				<AddIcon
+					className='bg-gray-400 rounded-md ml-8 mt-2'
+					onClick={onClickAddTodo}
+				/>
+			)}
 			<div>
 				<DragDropContext onDragEnd={onDragEnd}>
 					{currentTodoDetail ? (
@@ -120,7 +150,11 @@ const Board = () => {
 							todo={currentTodoDetail}
 						/>
 					) : null}
-					<div className='flex mt-5 px-4'>
+					<TodoAddModal
+						open={isAddModalOpen}
+						handleClose={() => setIsAddModalOpen(false)}
+					/>
+					<div className='flex mt-2 px-4'>
 						{data.map((column) => {
 							return (
 								<Droppable key={column.id} droppableId={column.id}>
@@ -135,11 +169,11 @@ const Board = () => {
 												{column.title}
 											</div>
 											<div className='flex flex-col gap-y-4'>
-												{filterTodos(myTodos[column.id as Status]).map(
+												{filterTodos(todos[column.id as Status]).map(
 													(todo, index) => {
 														return (
 															<Draggable
-																isDragDisabled={mode === 'public'}
+																isDragDisabled={mode === 'public' || !!userId}
 																draggableId={String(todo.id)}
 																index={index}
 																key={String(todo.id)}

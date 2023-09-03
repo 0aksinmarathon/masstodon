@@ -18,7 +18,9 @@ const authSlice = createSlice({
 		getUser(state, action) {
 			state.user = action.payload.user;
 		},
+
 		countUser(state, action) {},
+		
 	},
 });
 
@@ -46,6 +48,7 @@ export function getUser(uid: string) {
 		});
 	};
 }
+
 
 // export function countUsers(uid: string) {
 // 	return async (dispatch: Dispatch) => {

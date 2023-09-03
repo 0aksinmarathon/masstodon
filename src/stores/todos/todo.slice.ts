@@ -49,6 +49,7 @@ export interface Tag {
 }
 
 export interface User {
+	id: number;
 	name: string;
 	picture: string;
 }
@@ -57,15 +58,33 @@ export interface Like {
 	userId: number;
 }
 
-export type Status = 'planning' | 'workInProgress' | 'finished';
+export interface FollowUser {
+	id: number;
+	name: string;
+	picture: string;
+}
+
+export type Status = 'planning' | 'workInProgress' | 'finished' | 'archived';
 
 interface TodoSlice {
-	myTodos: { planning: Todo[]; workInProgress: Todo[]; finished: Todo[] };
+	myTodos: {
+		planning: Todo[];
+		workInProgress: Todo[];
+		finished: Todo[];
+		archived: Todo[];
+	};
+	publicTodos: {
+		planning: Todo[];
+		workInProgress: Todo[];
+		finished: Todo[];
+		archived: Todo[];
+	};
 	myCurrentTodo: Todo | null;
 }
 
 const initialState: TodoSlice = {
-	myTodos: { planning: [], workInProgress: [], finished: [] },
+	myTodos: { planning: [], workInProgress: [], finished: [], archived: [] },
+	publicTodos: { planning: [], workInProgress: [], finished: [], archived: [] },
 	myCurrentTodo: null,
 };
 
@@ -77,6 +96,16 @@ const todoSlice = createSlice({
 			state.myTodos.planning = action.payload['planning'];
 			state.myTodos.workInProgress = action.payload['workInProgress'];
 			state.myTodos.finished = action.payload['finished'];
+			state.myTodos.archived = action.payload['archived'];
+
+			console.log(action.payload);
+			console.log(state.myTodos);
+		},
+		getPublicTodos(state, action) {
+			state.publicTodos.planning = action.payload['planning'];
+			state.publicTodos.workInProgress = action.payload['workInProgress'];
+			state.publicTodos.finished = action.payload['finished'];
+			state.publicTodos.archived = action.payload['archived'];
 
 			console.log(action.payload);
 			console.log(state.myTodos);
@@ -288,13 +317,23 @@ const todoSlice = createSlice({
 	},
 });
 
-export function setMyTodos() {
+export function setMyTodos(userId: number) {
 	return async (dispatch: Dispatch) => {
 		const todoRepository = container.resolve<ITodoRepository>('TodoRepository');
-		const myTodos = await todoRepository.getMyTodoList();
+		const myTodos = await todoRepository.getMyTodoList(userId);
 		console.log(myTodos);
 		console.log('setMyTodos thunk');
 		dispatch({ type: 'todo/setMyTodos', payload: myTodos });
+	};
+}
+
+export function getPublicTodos(userId?: number) {
+	return async (dispatch: Dispatch) => {
+		const todoRepository = container.resolve<ITodoRepository>('TodoRepository');
+		const todos = await todoRepository.getPublicTodoList(userId);
+		console.log(todos);
+		console.log('getPublicTodos thunk');
+		dispatch({ type: 'todo/getPublicTodos', payload: todos });
 	};
 }
 
@@ -555,6 +594,32 @@ export function updateStatusToArchive(todoId: number, status: Status) {
 				status,
 			},
 		});
+	};
+}
+
+export function addTodo(
+	userId: number,
+	title: string,
+	description: string,
+	progress: number,
+	startDate: Date | null,
+	endDate: Date | null,
+	dueDate: Date | null,
+	status: Status
+) {
+	return async (dispatch: Dispatch) => {
+		console.log('addTodo thunk');
+		const todoRepository = container.resolve<ITodoRepository>('TodoRepository');
+		await todoRepository.addTodo(
+			userId,
+			title,
+			description,
+			progress,
+			startDate,
+			endDate,
+			dueDate,
+			status
+		);
 	};
 }
 

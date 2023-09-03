@@ -1,6 +1,7 @@
 export interface ITodoRepository {
 	getTodoDetail;
 	getMyTodoList;
+	getPublicTodoList;
 	getTodoList;
 	addTodo;
 	deleteTodo;

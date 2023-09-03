@@ -10,7 +10,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { TextField } from '@mui/material';
 import Modal from '@mui/material/Modal';
 import Slider from '@mui/material/Slider';
-import { parseISO } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { Circle } from 'rc-progress';
 import { useEffect, useState } from 'react';
 import DatePicker from 'react-datepicker';
@@ -40,7 +40,6 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { blueGrey, grey, pink } from '@mui/material/colors';
 import { useSelector } from 'react-redux';
-import { dummyUserId } from '../dummy-data';
 import Comment from './Comment';
 const TodoDetailModal = (props: {
 	todo: Todo;
@@ -169,6 +168,14 @@ const TodoDetailModal = (props: {
 		dispatch(updateStatusToArchive(id, status));
 	};
 
+	console.log(startDate);
+	console.log(endDate);
+	console.log(dueDate);
+	console.log(startDate ? parseISO(startDate) : null);
+	console.log(endDate ? parseISO(endDate) : null);
+	console.log(dueDate ? parseISO(dueDate) : null);
+	console.log(parseISO(null));
+
 	return (
 		<Modal open={open} onClose={handleClose}>
 			<div className='w-[800px] h-[400px] bg-gray-500 rounded-xl fixed inset-0 m-auto overflow-y-auto py-5 pl-5 pr-10 drop-shadow-hard2'>
@@ -210,7 +217,7 @@ const TodoDetailModal = (props: {
 						<div className='w-10 ml-2 flex justify-end'>{tmpProgress}%</div>
 					</div>
 				</div>
-				{status === 'finished' && userId === dummyUserId && (
+				{status === 'finished' && userId === user?.id && (
 					<div
 						className='mt-1 cursor-pointer flex justify-end text-sky-200 '
 						onClick={onClickSendToArchive}
@@ -312,31 +319,26 @@ const TodoDetailModal = (props: {
 				<div className=' py-2 '>
 					<div className='flex flex-wrap gap-x-4 gap-y-1 items-center '>
 						{tags.length !== 0 ? (
-							<div className='flex mr-auto  flex-grow justify-center'>
+							<div className='flex mr-auto  flex-grow justify-center gap-x-2'>
 								{tags.map(({ id: tagId, name }) => {
-									console.log(isAddingTag);
 									return (
-										<>
-											<div className='flex items-center' key={tagId}>
-												<div className='rounded-md px-2 bg-gray-800 text-xs h-5 pt-0.5 '>
-													{name}
-												</div>
-												{isMyTodo && (
-													<CancelIcon
-														className='cursor-pointer'
-														sx={{
-															width: '16px',
-															position: 'relative',
-															bottom: '12px',
-															right: '8px',
-														}}
-														onClick={() =>
-															dispatch(deleteTag(id, status, tagId))
-														}
-													/>
-												)}
+										<div className='flex items-center' key={tagId}>
+											<div className='rounded-md px-2 bg-gray-800 text-xs h-5 pt-0.5 '>
+												{name}
 											</div>
-										</>
+											{isMyTodo && (
+												<CancelIcon
+													className='cursor-pointer'
+													sx={{
+														width: '16px',
+														position: 'relative',
+														bottom: '12px',
+														right: '8px',
+													}}
+													onClick={() => dispatch(deleteTag(id, status, tagId))}
+												/>
+											)}
+										</div>
 									);
 								})}
 							</div>
@@ -403,7 +405,11 @@ const TodoDetailModal = (props: {
 								placeholderText='Start Date'
 							/>
 						) : (
-							<div>{startDate ? parseISO(startDate) : 'Not set'}</div>
+							<div>
+								{startDate
+									? format(parseISO(startDate), 'yyyy/MM/dd')
+									: 'Not set'}
+							</div>
 						)}
 					</div>
 					<div className='flex justify-center items-center py-1 w-2/4 gap-x-4'>
@@ -419,7 +425,9 @@ const TodoDetailModal = (props: {
 								placeholderText='End Date'
 							/>
 						) : (
-							<div>{endDate ? parseISO(endDate) : 'Not set'}</div>
+							<div>
+								{endDate ? format(parseISO(endDate), 'yyyy/MM/dd') : 'Not set'}
+							</div>
 						)}
 					</div>
 				</div>
@@ -437,7 +445,9 @@ const TodoDetailModal = (props: {
 							placeholderText='Due Date'
 						/>
 					) : (
-						<div>{dueDate ? parseISO(dueDate) : 'Not set'}</div>
+						<div>
+							{dueDate ? format(parseISO(dueDate), 'yyyy/MM/dd') : 'Not set'}
+						</div>
 					)}
 				</div>
 				<hr className='' />
