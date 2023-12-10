@@ -23,9 +23,10 @@ Basic MassTodon functionalities includes following:
 - Frontend
   - React
   - tailwind CSS
+  - scss
   - State Management
     - reduxjs-toolkit
-  - DI
+  - Dependency Injection
     - tsyringe
 - DB, API
   - supabase (https://supabase.com/)
@@ -37,6 +38,7 @@ Basic MassTodon functionalities includes following:
 
 - To minimize influence of the change of specific factors such as DB and DB-related logics implementation on more essential and abstract business logics, clean-architecture like repository architecture pattern is adopted.
   - Communication with API can be done only via repositories, which implement corresponding interfaces.
+- As recommended in reduxjs-toolkit, stores are divided by a unit called slice, according to functionalities.
 
 ## Environment Setup
 
