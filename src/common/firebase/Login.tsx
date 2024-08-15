@@ -28,8 +28,8 @@ export const Login = () => {
           // navigate('/');
         }
       });
-    } catch {
-      console.log("ログインに失敗しました");
+    } catch (e) {
+      console.log("login failed", e);
     }
   };
 
