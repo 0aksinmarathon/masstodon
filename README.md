@@ -42,12 +42,16 @@ Basic MassTodon functionalities includes following:
 
 ## Environment Setup
 
-### Install fnm
-
-[fnm github](https://github.com/Schniz/fnm)
+### Install anyenv
 
 ```bash
-fnm install 20.8.1
+git clone https://github.com/anyenv/anyenv ~/.anyenv
+echo 'export PATH="$HOME/.anyenv/bin:$PATH"' >> ~/.zshrc          
+echo 'eval "$(anyenv init -)"' >> ~/.zshrc
+exec $SHELL -l                 
+anyenv install --init           
+anyenv install nodenv
+nodenv install 20.8.1
 ```
 
 ### Install pnpm

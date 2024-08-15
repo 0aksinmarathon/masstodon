@@ -5,13 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
+    "ci": "pnpm install --frozen-lockfile",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "clean": "pnpm store prune & rm -rf .pnpm-store node_modules"
   },
   "dependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
+    "@firebase/auth": "^1.7.6",
     "@mui/icons-material": "^5.14.0",
     "@mui/material": "^5.14.0",
     "@mui/styles": "^5.14.0",
@@ -34,6 +37,7 @@
     "@types/uuid": "^9.0.2",
     "chart.js": "^4.4.0",
     "date-fns": "^2.30.0",
+    "firebase": "10.4.0",
     "prop-types": "^15.8.1",
     "rc-progress": "^3.4.2",
     "react": "17.0.2",
