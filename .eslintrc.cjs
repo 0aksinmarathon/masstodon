@@ -23,5 +23,36 @@ module.exports = {
 			{ allowConstantExport: true },
 		],
 		'@typescript-eslint/no-non-null-assertion': 'off',
+		'import/order': [
+			'error',
+			{
+				groups: [
+					'builtin',
+					'external',
+					'parent',
+					'sibling',
+					'index',
+					'object',
+					'type',
+				],
+				pathGroups: [
+					{
+						pattern: '{react,react-dom/**,react-router-dom}',
+						group: 'builtin',
+						position: 'before',
+					},
+					{
+						pattern: '@src/**',
+						group: 'parent',
+						position: 'before',
+					},
+				],
+				pathGroupsExcludedImportTypes: ['builtin'],
+				alphabetize: {
+					order: 'asc',
+				},
+				'newlines-between': 'always',
+			},
+		],
 	},
 };

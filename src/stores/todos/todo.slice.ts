@@ -1,8 +1,8 @@
 import { Dispatch, createSlice } from '@reduxjs/toolkit';
+import { formatISO } from 'date-fns';
+import { DropResult } from 'react-beautiful-dnd';
 import { container } from 'tsyringe';
 import { ITodoRepository } from '../../repositories/todo.repository.interface';
-import { DropResult } from 'react-beautiful-dnd';
-import { formatISO } from 'date-fns';
 
 export interface Todo {
 	id: number;
@@ -17,8 +17,9 @@ export interface Todo {
 	sortKey: number;
 	tags: Tag[];
 	comments: Comment[];
-	likes: Likes[];
+	likes: Like[];
 	user: User;
+	userId: number;
 }
 export interface TodoDetail {
 	id: string;
@@ -32,13 +33,15 @@ export interface TodoDetail {
 	sortKey: number;
 	tags: Tag[];
 	comments: Comment[];
-	user: User[];
+	user: User;
+	userId: number;
 }
 
 export interface Comment {
 	id: number;
-	userName: string;
+	user: { name: string; picture: string; id: number };
 	content: string;
+	createdAt: string;
 }
 export interface Tag {
 	id: number;
@@ -46,23 +49,42 @@ export interface Tag {
 }
 
 export interface User {
+	id: number;
 	name: string;
 	picture: string;
 }
 
-export interface Likes {
-	user_id: number;
+export interface Like {
+	userId: number;
 }
 
-export type Status = 'planning' | 'workInProgress' | 'finished';
+export interface FollowUser {
+	id: number;
+	name: string;
+	picture: string;
+}
+
+export type Status = 'planning' | 'workInProgress' | 'finished' | 'archived';
 
 interface TodoSlice {
-	myTodos: { planning: Todo[]; workInProgress: Todo[]; finished: Todo[] };
+	myTodos: {
+		planning: Todo[];
+		workInProgress: Todo[];
+		finished: Todo[];
+		archived: Todo[];
+	};
+	publicTodos: {
+		planning: Todo[];
+		workInProgress: Todo[];
+		finished: Todo[];
+		archived: Todo[];
+	};
 	myCurrentTodo: Todo | null;
 }
 
 const initialState: TodoSlice = {
-	myTodos: { planning: [], workInProgress: [], finished: [] },
+	myTodos: { planning: [], workInProgress: [], finished: [], archived: [] },
+	publicTodos: { planning: [], workInProgress: [], finished: [], archived: [] },
 	myCurrentTodo: null,
 };
 
@@ -74,13 +96,25 @@ const todoSlice = createSlice({
 			state.myTodos.planning = action.payload['planning'];
 			state.myTodos.workInProgress = action.payload['workInProgress'];
 			state.myTodos.finished = action.payload['finished'];
+			state.myTodos.archived = action.payload['archived'];
+
+			console.log(action.payload);
+			console.log(state.myTodos);
+		},
+		getPublicTodos(state, action) {
+			state.publicTodos.planning = action.payload['planning'];
+			state.publicTodos.workInProgress = action.payload['workInProgress'];
+			state.publicTodos.finished = action.payload['finished'];
+			state.publicTodos.archived = action.payload['archived'];
 
 			console.log(action.payload);
 			console.log(state.myTodos);
 		},
 		setCurrentTodo(state, action) {
-			state.myCurrentTodo = action.payload;
+			console.log('setCurrentTodo');
 			console.log(action.payload);
+			state.myCurrentTodo = action.payload;
+			console.log(state.myCurrentTodo);
 		},
 		exchangeTodos(state, action) {
 			const { source, destination } = action.payload as DropResult;
@@ -189,16 +223,117 @@ const todoSlice = createSlice({
 			if (!state.myCurrentTodo) return;
 			state.myCurrentTodo.dueDate = dueDate;
 		},
+
+		addLike(state, action) {
+			console.log('action addLike');
+			const { todoId, status, userId } = action.payload;
+			const todoIndex = state.myTodos[status as Status].findIndex(
+				({ id }) => id === todoId
+			);
+			state.myTodos[status as Status][todoIndex].likes.push({ userId });
+			if (!state.myCurrentTodo) return;
+			state.myCurrentTodo.likes.push({ userId });
+		},
+
+		deleteLike(state, action) {
+			console.log('action deleteLike');
+			const { todoId, status, userId } = action.payload;
+			console.log(userId);
+			const todoIndex = state.myTodos[status as Status].findIndex(
+				({ id }) => id === todoId
+			);
+			console.log(state.myTodos[status as Status][todoIndex].likes);
+			state.myTodos[status as Status][todoIndex].likes = state.myTodos[
+				status as Status
+			][todoIndex].likes.filter((like) => like.userId !== userId);
+			if (!state.myCurrentTodo) return;
+			state.myCurrentTodo.likes = state.myCurrentTodo.likes.filter(
+				(like) => like.userId !== userId
+			);
+		},
+
+		updateProgress(state, action) {
+			console.log('action updateProgress');
+			const { todoId, status, progress } = action.payload;
+			const todo = state.myTodos[status as Status].find(
+				({ id }) => id === todoId
+			);
+
+			if (!todo) return;
+			todo.progress = progress;
+			if (!state.myCurrentTodo) return;
+			state.myCurrentTodo.progress = progress;
+		},
+
+		updateComment(state, action) {
+			console.log('action updateComment');
+			const { commentId, content } = action.payload;
+			if (!state.myCurrentTodo) return;
+			const comment = state.myCurrentTodo.comments.find(
+				({ id }) => id === commentId
+			);
+			if (!comment) return;
+			comment.content = content;
+		},
+		deleteComment(state, action) {
+			console.log('action deleteComment');
+			const { todoId, status, commentId } = action.payload;
+			const todo = state.myTodos[status as Status].find(
+				({ id }) => id === todoId
+			);
+			if (!todo) return;
+			todo.comments = todo.comments.filter((id) => id !== commentId);
+			if (!state.myCurrentTodo) return;
+			console.log('action deleteComment detail');
+			state.myCurrentTodo.comments = state.myCurrentTodo.comments.filter(
+				(id) => id !== commentId
+			);
+		},
+		addComment(state, action) {
+			console.log('action addComment');
+			// const { todoId, status, content, created } = action.payload;
+			// const todo = state.myTodos[status as Status].find(
+			// 	({ id }) => id === todoId
+			// );
+			// if (!todo) return;
+			// todo.comments = [...todo.comments]((id) => id !== commentId);
+			// if (!state.myCurrentTodo) return;
+
+			// state.myCurrentTodo.comments = state.myCurrentTodo.comments.filter(
+			// 	(id) => id !== commentId
+			// );
+		},
+		updateStatusToArchive(state, action) {
+			console.log('action updateStatus');
+			const { todoId, status } = action.payload;
+			const todoIndex = state.myTodos[status as Status].findIndex(
+				({ id }) => id === todoId
+			);
+			if (todoIndex === -1) return;
+			state.myTodos[status as Status].splice(todoIndex, 1);
+			if (!state.myCurrentTodo) return;
+			state.myCurrentTodo = null;
+		},
 	},
 });
 
-export function setMyTodos() {
+export function setMyTodos(userId: number) {
 	return async (dispatch: Dispatch) => {
 		const todoRepository = container.resolve<ITodoRepository>('TodoRepository');
-		const myTodos = await todoRepository.getMyTodoList();
+		const myTodos = await todoRepository.getMyTodoList(userId);
 		console.log(myTodos);
 		console.log('setMyTodos thunk');
 		dispatch({ type: 'todo/setMyTodos', payload: myTodos });
+	};
+}
+
+export function getPublicTodos(userId?: number) {
+	return async (dispatch: Dispatch) => {
+		const todoRepository = container.resolve<ITodoRepository>('TodoRepository');
+		const todos = await todoRepository.getPublicTodoList(userId);
+		console.log(todos);
+		console.log('getPublicTodos thunk');
+		dispatch({ type: 'todo/getPublicTodos', payload: todos });
 	};
 }
 
@@ -339,6 +474,152 @@ export function updateDueDate(
 				dueDate: dueDate ? formatISO(dueDate) : null,
 			},
 		});
+	};
+}
+
+export function addLike(todoId: number, status: Status, userId: number) {
+	return async (dispatch: Dispatch) => {
+		console.log('addLike thunk');
+		const todoRepository = container.resolve<ITodoRepository>('TodoRepository');
+		await todoRepository.addLike(todoId, userId);
+		dispatch({
+			type: 'todo/addLike',
+			payload: {
+				todoId,
+				status,
+				userId,
+			},
+		});
+	};
+}
+
+export function deleteLike(todoId: number, status: Status, userId: number) {
+	return async (dispatch: Dispatch) => {
+		console.log('deleteLike thunk');
+
+		const todoRepository = container.resolve<ITodoRepository>('TodoRepository');
+		await todoRepository.deleteLike(todoId, userId);
+		dispatch({
+			type: 'todo/deleteLike',
+			payload: {
+				todoId,
+				status,
+				userId,
+			},
+		});
+	};
+}
+
+export function updateProgress(
+	todoId: number,
+	status: Status,
+	progress: number
+) {
+	return async (dispatch: Dispatch) => {
+		console.log('updateProgress thunk');
+
+		const todoRepository = container.resolve<ITodoRepository>('TodoRepository');
+		await todoRepository.updateProgress(todoId, progress);
+		dispatch({
+			type: 'todo/updateProgress',
+			payload: {
+				todoId,
+				status,
+				progress,
+			},
+		});
+	};
+}
+
+export function updateComment(commentId: number, content: string) {
+	return async (dispatch: Dispatch) => {
+		console.log('updateComment thunk');
+
+		const todoRepository = container.resolve<ITodoRepository>('TodoRepository');
+		await todoRepository.updateComment(commentId, content);
+		dispatch({
+			type: 'todo/updateComment',
+			payload: {
+				commentId,
+				content,
+			},
+		});
+	};
+}
+
+export function deleteComment(
+	todoId: number,
+	status: Status,
+	commentId: number
+) {
+	return async (dispatch: Dispatch) => {
+		console.log('deleteComment thunk');
+
+		const todoRepository = container.resolve<ITodoRepository>('TodoRepository');
+		await todoRepository.deleteComment(commentId);
+		dispatch({
+			type: 'todo/deleteComment',
+			payload: {
+				todoId,
+				status,
+				commentId,
+			},
+		});
+	};
+}
+
+export function addComment(
+	todoId: number,
+	status: Status,
+	content: string,
+	userId: number
+) {
+	return async (dispatch: Dispatch) => {
+		console.log('addComment thunk');
+		const now = new Date();
+		const todoRepository = container.resolve<ITodoRepository>('TodoRepository');
+		await todoRepository.addComment(todoId, content, now, userId);
+	};
+}
+
+export function updateStatusToArchive(todoId: number, status: Status) {
+	return async (dispatch: Dispatch) => {
+		console.log('updateStatusToArchive thunk');
+		const todoRepository = container.resolve<ITodoRepository>('TodoRepository');
+		await todoRepository.updateStatusToArchive(todoId);
+		dispatch({
+			type: 'todo/updateStatusToArchive',
+			payload: {
+				todoId,
+				status,
+			},
+		});
+	};
+}
+
+export function addTodo(
+	userId: number,
+	title: string,
+	description: string,
+	progress: number,
+	startDate: Date | null,
+	endDate: Date | null,
+	dueDate: Date | null,
+	status: Status
+) {
+	return async (dispatch: Dispatch) => {
+		console.log('addTodo thunk');
+		const todoRepository = container.resolve<ITodoRepository>('TodoRepository');
+		await todoRepository.addTodo(
+			userId,
+			title,
+			description,
+			progress,
+			startDate,
+			endDate,
+			dueDate,
+			status
+		);
 	};
 }
 

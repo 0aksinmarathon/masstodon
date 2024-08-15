@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+* {
+	box-sizing: border-box;
+}
+
 body {
 	/* background: rgb(61, 93, 189); */
 	/* background: linear-gradient(

@@ -1,6 +1,7 @@
 export interface ITodoRepository {
 	getTodoDetail;
 	getMyTodoList;
+	getPublicTodoList;
 	getTodoList;
 	addTodo;
 	deleteTodo;
@@ -10,9 +11,13 @@ export interface ITodoRepository {
 	deleteComment;
 	deleteTag;
 	addTag;
-	updateTitle;]
+	updateTitle;
 	updateDescription;
 	updateStartDate;
 	updateEndDate;
 	updateDueDate;
+	addLike;
+	deleteLike;
+	updateProgress;
+	updateStatusToArchive;
 }

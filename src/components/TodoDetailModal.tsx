@@ -1,40 +1,46 @@
+import AddIcon from '@mui/icons-material/Add';
+import AlarmOnIcon from '@mui/icons-material/AlarmOn';
+import CancelIcon from '@mui/icons-material/Cancel';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
+import EditIcon from '@mui/icons-material/Edit';
+import PercentIcon from '@mui/icons-material/Percent';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import { TextField } from '@mui/material';
+import Modal from '@mui/material/Modal';
+import Slider from '@mui/material/Slider';
+import { format, parseISO } from 'date-fns';
+import { Circle } from 'rc-progress';
+import { useEffect, useState } from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { useDispatch } from 'react-redux';
+import { getColor } from '../common/util/get-color';
+import { AppDispatch, RootState } from '../stores/store';
 import {
-	Status,
 	Todo,
-	TodoDetail,
+	addComment,
+	addLike,
 	addTag,
+	deleteLike,
 	deleteTag,
+	setCurrentTodo,
 	updateDescription,
 	updateDueDate,
 	updateEndDate,
+	updateProgress,
 	updateStartDate,
+	updateStatusToArchive,
 	updateTitle,
 } from '../stores/todos/todo.slice';
 import './TodoDetailModal.scss';
-import Modal from '@mui/material/Modal';
-import { Circle } from 'rc-progress';
-import { getColor } from '../common/util/get-color';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import InsertCommentIcon from '@mui/icons-material/InsertComment';
-import CancelIcon from '@mui/icons-material/Cancel';
-import CheckIcon from '@mui/icons-material/Check';
-import ClearIcon from '@mui/icons-material/Clear';
-import CloseIcon from '@mui/icons-material/Close';
-import EditIcon from '@mui/icons-material/Edit';
-import AddIcon from '@mui/icons-material/Add';
-import AlarmOnIcon from '@mui/icons-material/AlarmOn';
-import { parse, parseISO } from 'date-fns';
-import { AppDispatch } from '../stores/store';
-import { useDispatch } from 'react-redux';
-import { useState } from 'react';
-import { TextField } from '@mui/material';
-import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import { getDisplayDate } from '../common/util/date';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 // import "../../assets/styles/date-picker.css";
-
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import { blueGrey, grey, pink } from '@mui/material/colors';
+import { useSelector } from 'react-redux';
+import Comment from './Comment';
 const TodoDetailModal = (props: {
 	todo: Todo;
 	open: any;
@@ -53,14 +59,32 @@ const TodoDetailModal = (props: {
 			endDate,
 			dueDate,
 			likes,
+			userId,
 		},
 		open,
 		handleClose,
 	} = props;
+	console.log('todoDetailModal');
+
+	const user = useSelector((store: RootState) => store.auth.user);
+	const isMyTodo = user?.id === userId;
 
 	const dispatch = useDispatch<AppDispatch>();
 	const [isEditingTitle, setIsEditingTitle] = useState(false);
 	const [editedTitle, setEditedTitle] = useState('');
+	const [tmpProgress, setTmpProgress] = useState(progress);
+	useEffect(() => {
+		console.log('todoDetailModal useEffect');
+		setTmpProgress(progress);
+		setIsEditingTitle(false);
+		setEditedTitle('');
+		setIsEditingDescription(false);
+		setEditedDescription('');
+		setIsAddingTag(false);
+		setAddedTag('');
+		setIsAddingComment(false);
+		setAddedComment('');
+	}, [props.todo]);
 
 	const [isEditingDescription, setIsEditingDescription] = useState(false);
 	const [editedDescription, setEditedDescription] = useState('');
@@ -98,8 +122,8 @@ const TodoDetailModal = (props: {
 		setIsEditingDescription(false);
 	};
 
-	const onAddTitle = () => {
-		console.log('onAddTitle');
+	const onAddTag = () => {
+		console.log('onAddTag');
 		setAddedTag('');
 		setIsAddingTag(true);
 	};
@@ -114,6 +138,44 @@ const TodoDetailModal = (props: {
 		setIsAddingTag(false);
 	};
 
+	const onClickLikeButton = () => {
+		if (!user) return;
+		if (likes.find((like) => like.userId === user.id)) {
+			dispatch(deleteLike(id, status, user.id));
+		} else {
+			dispatch(addLike(id, status, user.id));
+		}
+	};
+
+	const [isAddingComment, setIsAddingComment] = useState(false);
+	const [addedComment, setAddedComment] = useState('');
+	const onAddComment = () => {
+		setIsAddingComment(true);
+	};
+	const onConfirmAddComment = async () => {
+		if (!user) return;
+		await dispatch(addComment(id, status, addedComment, user.id));
+		await dispatch(setCurrentTodo(id));
+		setIsAddingComment(false);
+		setAddedComment('');
+	};
+	const onCancelAddComment = () => {
+		setIsAddingComment(false);
+		setAddedComment('');
+	};
+
+	const onClickSendToArchive = () => {
+		dispatch(updateStatusToArchive(id, status));
+	};
+
+	console.log(startDate);
+	console.log(endDate);
+	console.log(dueDate);
+	console.log(startDate ? parseISO(startDate) : null);
+	console.log(endDate ? parseISO(endDate) : null);
+	console.log(dueDate ? parseISO(dueDate) : null);
+	console.log(parseISO(null));
+
 	return (
 		<Modal open={open} onClose={handleClose}>
 			<div className='w-[800px] h-[400px] bg-gray-500 rounded-xl fixed inset-0 m-auto overflow-y-auto py-5 pl-5 pr-10 drop-shadow-hard2'>
@@ -121,28 +183,60 @@ const TodoDetailModal = (props: {
 					<div className='break-words line-clamp-3 text-xs mb-2 border w-[100px] flex justify-center items-center'>
 						{id}
 					</div>
-					<div className='w-[30px] opacity-75'>
-						<Circle
-							percent={progress}
-							strokeWidth={20}
-							steps={{
-								count: 20,
-								space: 5,
-							}}
-							strokeColor={getColor(progress)}
-						/>
+					<div className='flex items-center'>
+						<button
+							className='flex justify-center items-center mr-4 border rounded-lg px-2 bg-white text-gray-400 cursor-pointer drop-shadow-hard1'
+							onClick={user && onClickLikeButton}
+						>
+							{user ? (
+								<div className='mr-1'>
+									{likes.find((like) => like.userId === user.id) ? (
+										<FavoriteIcon style={{ fill: pink[200] }} />
+									) : (
+										<FavoriteBorderIcon />
+									)}
+								</div>
+							) : (
+								<div className='mr-1'>
+									<FavoriteIcon style={{ fill: pink[200] }} />
+								</div>
+							)}
+							<div>{likes.length}</div>
+						</button>
+						<div className='w-[30px] opacity-75'>
+							<Circle
+								percent={tmpProgress}
+								strokeWidth={20}
+								steps={{
+									count: 20,
+									space: 5,
+								}}
+								strokeColor={getColor(tmpProgress)}
+							/>
+						</div>
+						<div className='w-10 ml-2 flex justify-end'>{tmpProgress}%</div>
 					</div>
 				</div>
-				<div className='flex justify-between items-center mt-2'>
+				{status === 'finished' && userId === user?.id && (
+					<div
+						className='mt-1 cursor-pointer flex justify-end text-sky-200 '
+						onClick={onClickSendToArchive}
+					>
+						<span className='border-b border-sky-200'>Send To Archive</span>
+					</div>
+				)}
+
+				<div className='flex justify-between items-center mt-1'>
 					{!isEditingTitle ? (
 						<>
 							<div className='font-semibold break-words line-clamp-2 text-lg  mr-4'>
 								{title}
 							</div>
-
-							<div className='mt-auto border rounded-md cursor-pointer'>
-								<EditIcon className='' onClick={() => onEditTitle(title)} />
-							</div>
+							{isMyTodo && (
+								<div className='mt-auto border rounded-md cursor-pointer'>
+									<EditIcon className='' onClick={() => onEditTitle(title)} />
+								</div>
+							)}
 						</>
 					) : (
 						<>
@@ -182,12 +276,14 @@ const TodoDetailModal = (props: {
 							<div className='break-words line-clamp-5 text-sm mr-4'>
 								{description}
 							</div>
-							<div className='mt-auto border rounded-md cursor-pointer'>
-								<EditIcon
-									className=''
-									onClick={() => onEditDescription(description)}
-								/>
-							</div>
+							{isMyTodo && (
+								<div className='mt-auto border rounded-md cursor-pointer'>
+									<EditIcon
+										className=''
+										onClick={() => onEditDescription(description)}
+									/>
+								</div>
+							)}
 						</>
 					) : (
 						<>
@@ -223,15 +319,14 @@ const TodoDetailModal = (props: {
 				<div className=' py-2 '>
 					<div className='flex flex-wrap gap-x-4 gap-y-1 items-center '>
 						{tags.length !== 0 ? (
-							<div className='flex mr-auto  flex-grow justify-center'>
+							<div className='flex mr-auto  flex-grow justify-center gap-x-2'>
 								{tags.map(({ id: tagId, name }) => {
-									console.log(isAddingTag);
 									return (
-										<>
-											<div className='flex items-center'>
-												<div className='rounded-md px-2 bg-gray-800 text-xs h-5 pt-0.5 '>
-													{name}
-												</div>
+										<div className='flex items-center' key={tagId}>
+											<div className='rounded-md px-2 bg-gray-800 text-xs h-5 pt-0.5 '>
+												{name}
+											</div>
+											{isMyTodo && (
 												<CancelIcon
 													className='cursor-pointer'
 													sx={{
@@ -242,8 +337,8 @@ const TodoDetailModal = (props: {
 													}}
 													onClick={() => dispatch(deleteTag(id, status, tagId))}
 												/>
-											</div>
-										</>
+											)}
+										</div>
 									);
 								})}
 							</div>
@@ -275,19 +370,23 @@ const TodoDetailModal = (props: {
 								/>
 							</div>
 						)}
-						{!isAddingTag ? (
-							<div className='mt-auto border rounded-md cursor-pointer'>
-								<AddIcon className='' onClick={onAddTitle} />
-							</div>
-						) : (
-							<div className='flex'>
-								<div className='mt-auto border rounded-md cursor-pointer mx-2'>
-									<CheckIcon className='' onClick={onCommitTag} />
-								</div>
-								<div className='mt-auto border rounded-md cursor-pointer'>
-									<CloseIcon className='' onClick={onRollbackTag} />
-								</div>
-							</div>
+						{isMyTodo && (
+							<>
+								{!isAddingTag ? (
+									<div className='mt-auto border rounded-md cursor-pointer'>
+										<AddIcon className='' onClick={onAddTag} />
+									</div>
+								) : (
+									<div className='flex'>
+										<div className='mt-auto border rounded-md cursor-pointer mx-2'>
+											<CheckIcon className='' onClick={onCommitTag} />
+										</div>
+										<div className='mt-auto border rounded-md cursor-pointer'>
+											<CloseIcon className='' onClick={onRollbackTag} />
+										</div>
+									</div>
+								)}
+							</>
 						)}
 					</div>
 				</div>
@@ -295,53 +394,151 @@ const TodoDetailModal = (props: {
 				<div className='px-4  rounded-b-md flex text-sm'>
 					<div className='w-2/4 border-r flex justify-center items-center py-1 gap-x-4'>
 						<PlayArrowIcon />{' '}
-						<DatePicker
-							selected={startDate ? parseISO(startDate) : null}
-							onChange={(e) => {
-								dispatch(updateStartDate(id, status, e));
-							}}
-							isClearable
-							dateFormat='yyyy/MM/dd'
-							placeholderText='Start Date'
-						/>
+						{isMyTodo ? (
+							<DatePicker
+								selected={startDate ? parseISO(startDate) : null}
+								onChange={(e) => {
+									dispatch(updateStartDate(id, status, e));
+								}}
+								isClearable
+								dateFormat='yyyy/MM/dd'
+								placeholderText='Start Date'
+							/>
+						) : (
+							<div>
+								{startDate
+									? format(parseISO(startDate), 'yyyy/MM/dd')
+									: 'Not set'}
+							</div>
+						)}
 					</div>
 					<div className='flex justify-center items-center py-1 w-2/4 gap-x-4'>
 						<DoneOutlineIcon />
-						<DatePicker
-							selected={endDate ? parseISO(endDate) : null}
-							onChange={(e) => {
-								dispatch(updateEndDate(id, status, e));
-							}}
-							isClearable
-							dateFormat='yyyy/MM/dd'
-							placeholderText='End Date'
-						/>
+						{isMyTodo ? (
+							<DatePicker
+								selected={endDate ? parseISO(endDate) : null}
+								onChange={(e) => {
+									dispatch(updateEndDate(id, status, e));
+								}}
+								isClearable
+								dateFormat='yyyy/MM/dd'
+								placeholderText='End Date'
+							/>
+						) : (
+							<div>
+								{endDate ? format(parseISO(endDate), 'yyyy/MM/dd') : 'Not set'}
+							</div>
+						)}
 					</div>
 				</div>
 				<hr className='' />
 				<div className='flex justify-center items-center py-1 gap-x-4 text-sm'>
 					<AlarmOnIcon />
-
-					<DatePicker
-						selected={dueDate ? parseISO(dueDate) : null}
-						onChange={(e) => {
-							dispatch(updateDueDate(id, status, e));
-						}}
-						isClearable
-						dateFormat='yyyy/MM/dd'
-						placeholderText='Due Date'
-					/>
+					{isMyTodo ? (
+						<DatePicker
+							selected={dueDate ? parseISO(dueDate) : null}
+							onChange={(e) => {
+								dispatch(updateDueDate(id, status, e));
+							}}
+							isClearable
+							dateFormat='yyyy/MM/dd'
+							placeholderText='Due Date'
+						/>
+					) : (
+						<div>
+							{dueDate ? format(parseISO(dueDate), 'yyyy/MM/dd') : 'Not set'}
+						</div>
+					)}
 				</div>
 				<hr className='' />
-				<div className='px-4  rounded-b-md flex text-sm'>
-					<div className='w-2/4 border-r flex justify-center items-center py-1 gap-x-4'>
-						<InsertCommentIcon /> {comments.length}
+
+				<div className='px-4  rounded-b-md flex text-sm items-center'>
+					<div className='mr-3'>
+						<PercentIcon />
 					</div>
-					<div className='flex justify-center items-center py-1 w-2/4 gap-x-4'>
-						<FavoriteIcon />
-						{likes.length}
+					<div className='w-full'>
+						<Slider
+							value={tmpProgress}
+							step={1}
+							marks
+							min={0}
+							max={100}
+							onChange={(e) => {
+								setTmpProgress(Number((e.target as HTMLInputElement).value));
+							}}
+							onChangeCommitted={() => {
+								dispatch(updateProgress(id, status, tmpProgress));
+							}}
+							style={{ color: isMyTodo ? blueGrey[900] : grey[700] }}
+							disabled={!isMyTodo}
+						/>
 					</div>
 				</div>
+				{comments.length !== 0 ? (
+					<div className='mt-10 flex gap-y-2 flex-col'>
+						{[...comments]
+							.sort((a, b) => {
+								if (a.createdAt > b.createdAt) return 1;
+								else if (a.createdAt < b.createdAt) return -1;
+								else return 0;
+							})
+							.map((comment) => (
+								<>
+									<Comment comment={comment} key={comment.id} />
+								</>
+							))}
+					</div>
+				) : (
+					<div className='mt-10 flex text-xs justify-center'>
+						<div>Be the first to post a comment!</div>
+					</div>
+				)}
+				{user && (
+					<>
+						{!isAddingComment ? (
+							<div className='border rounded-md cursor-pointer mt-2 w-[26px]'>
+								<AddIcon className='' onClick={onAddComment} />
+							</div>
+						) : (
+							<div className='bg-gray-600 p-2 rounded-md mt-2'>
+								<div className='flex'>
+									<div className='w-[95%] min-w-0'>
+										<TextField
+											label='comment'
+											multiline
+											value={addedComment}
+											onChange={(e) => {
+												console.log(e);
+												setAddedComment(e.target.value);
+											}}
+											className='mt-1'
+											fullWidth
+											inputProps={{
+												style: {
+													color: 'white',
+													fontSize: '16px',
+													// single quote required to make it work
+													fontFamily: "'M PLUS Rounded 1c'",
+												},
+											}}
+										/>
+									</div>
+
+									<div className='ml-2'>
+										<div className='flex justify-end'>
+											<div className='mt-auto border rounded-md cursor-pointer'>
+												<CheckIcon className='' onClick={onConfirmAddComment} />
+											</div>
+											<div className='mt-auto border rounded-md cursor-pointer mx-2'>
+												<CloseIcon className='' onClick={onCancelAddComment} />
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						)}
+					</>
+				)}
 			</div>
 		</Modal>
 	);

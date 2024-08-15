@@ -1,5 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Status, Todo } from './stores/todos/todo.slice';
+import { Todo } from './stores/todos/todo.slice';
+
+export const dummyUserId = 1;
 
 export const dummyDetail: Todo = {
 	id: 1,

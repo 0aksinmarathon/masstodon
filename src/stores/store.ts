@@ -1,6 +1,8 @@
 import { configureStore } from '@reduxjs/toolkit';
 
+import authReducer from './auth/auth.slice';
 import todoReducer from './todos/todo.slice';
+import userReducer from './users/user.slice';
 
 // import accountReducer from "./features/accounts/accountSlice";
 // import customerReducer from "./features/customers/customerSlice";
@@ -8,7 +10,8 @@ import todoReducer from './todos/todo.slice';
 const store = configureStore({
 	reducer: {
 		todo: todoReducer,
-		// customer: customerReducer,
+		auth: authReducer,
+		user: userReducer,
 	},
 });
 
